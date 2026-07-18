@@ -1,0 +1,11 @@
+﻿<Application x:Class="BsodDoctor.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:BsodDoctor"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <!-- Boolean Çeviriciler -->
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+        <local:BoolInverterConverter x:Key="BoolInverter" />
+    </Application.Resources>
+</Application>
