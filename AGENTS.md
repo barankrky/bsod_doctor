@@ -30,17 +30,8 @@
 │                         │                            │
 │                 ┌───────▼────────┐                    │
 │                 │   Local DB     │                    │
-│                 │ (SQLite/JSON)  │                    │
+│                 │   (SQLite)     │                    │
 │                 └────────────────┘                    │
-└─────────────────────────────────────────────────────┘
-         ▲
-         │ A2A iletişimi (hermes-a2a-bridge)
-         ▼
-┌─────────────────────────────────────────────────────┐
-│  Vis (Agent — 192.168.1.69:8765)                     │
-│  • BSOD hata kodlarını araştırır                     │
-│  • Çözümleri toplar ve DB'yi populate eder           │
-│  • Veritabanını güncel tutar                         │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -51,21 +42,19 @@
 3. **BSOD Dosya Tarayıcı** — `%SystemRoot%\Minidump\`, `%SystemRoot%\MEMORY.DMP` gibi yolları tarar
 4. **Çözüm Motoru** — Hata koduna göre local DB'den çözüm önerisini getirir
 5. **Local Veritabanı** — Hata kodu ↔ çözüm eşleştirmelerini tutar (SQLite)
-6. **A2A Köprüsü** — Vis ile iletişim kurarak veritabanı güncellemelerini alır
 
 ## 🛠 Teknoloji Yığını
 
-| Katman | Teknoloji |
-|--------|-----------|
-| **UI** | WPF (.NET 8) — XAML + MVVM |
-| **Dil** | C# 12 |
-| **Dump Analiz** | Microsoft.Diagnostics.Runtime (ClrMD) |
-| **Event Log** | System.Diagnostics.Eventing |
-| **Veritabanı** | SQLite (Microsoft.Data.Sqlite) |
-| **A2A İletişim** | Hermes A2A Bridge (HTTP/JSON) |
-| **Paket Yönetimi** | NuGet |
-| **Build** | MSBuild / dotnet CLI |
-| **Sürüm Kontrol** | Git + GitHub |
+|| Katman | Teknoloji |
+||--------|-----------|
+|| **UI** | WPF (.NET 8) — XAML + MVVM |
+|| **Dil** | C# 12 |
+|| **Dump Analiz** | Microsoft.Diagnostics.Runtime (ClrMD) |
+|| **Event Log** | System.Diagnostics.Eventing |
+|| **Veritabanı** | SQLite (Microsoft.Data.Sqlite) |
+|| **Paket Yönetimi** | NuGet |
+|| **Build** | MSBuild / dotnet CLI |
+|| **Sürüm Kontrol** | Git + GitHub |
 
 ## 🗄 Veritabanı Şeması (Taslak)
 
@@ -103,9 +92,8 @@ CREATE TABLE analysis_history (
 3. Hata kodu tespit edilir
 4. Yerel veritabanında sorgulanır
 5. **Varsa**: Çözüm doğrudan gösterilir
-6. **Yoksa**: Vis'e A2A ile sorgu gönderilir
-7. Vis araştırır, çözümü DB'ye yazar
-8. Uygulama güncel DB'den okur ve sonucu gösterir
+6. **Yoksa**: Kullanıcıya henüz kayıtlı çözüm olmadığı bildirilir
+   (Veritabanı güncellemeleri Vis tarafından harici olarak yapılır)
 
 ## 🚀 Başlangıç
 
@@ -139,9 +127,11 @@ dotnet build src/BsodDoctor
 
 ## 🤖 Agent Notları
 
-- **Friday** (ben, Hermes Agent) — WPF uygulamasını geliştirir, kod yazar
-- **Vis** (192.168.1.69:8765) — BSOD araştırması yapar, veritabanını doldurur
-- **A2A iletişim** — hermes-a2a-bridge üzerinden, token ile authentication
+| Makine | Agent | Rol |
+|--------|-------|-----|
+| **NextroByte** (bu PC) | — *(ben)* | WPF uygulamasını geliştirir, kod yazar. Baran ile birlikte çalışır. |
+| **NextroPad** (Baran'ın laptop) | **Friday** | Burak (kuzen) tarafından kullanılır. Proje geliştirmeye yardımcı olur. |
+| **NextroServer** (homelab, 192.168.1.69) | **Vis** | BSOD araştırması yapar, veritabanını doldurur ve günceller. **Kod içinde yer almaz.** |
 
 ## 📂 Proje Dizini (Planlanan)
 
@@ -163,8 +153,7 @@ bsod_doctor/
 │       │   ├── IDumpAnalyzer.cs
 │       │   ├── DumpAnalyzer.cs
 │       │   ├── EventLogReader.cs
-│       │   ├── DatabaseService.cs
-│       │   └── A2ABridgeService.cs
+│       │   └── DatabaseService.cs
 │       └── Data/
 │           └── bsod_errors.db
 ├── tests/
@@ -177,7 +166,8 @@ bsod_doctor/
 
 ## 📌 Notlar
 
-- Bu proje **Friday** ve **Vis** olmak üzere iki agent tarafından ortak geliştirilmektedir
+- Bu proje **NextroByte**, **NextroPad (Friday/Burak)** ve **NextroServer (Vis)** olmak üzere üç ortamda ortak geliştirilmektedir
+- Vis kod içinde yer almaz, sadece araştırma ve DB güncelleme için harici olarak çalışır
 - Frontend WPF ile başlıyor, ileride ihtiyaca göre değişebilir
 - Kullanıcı arayüzü sade ve anlaşılır olacak, son kullanıcı odaklı
 - Veritabanı repoya embedded olarak dahil edilecek (başlangıç datası ile)
