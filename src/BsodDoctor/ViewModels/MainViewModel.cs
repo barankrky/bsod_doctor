@@ -13,7 +13,6 @@ public partial class MainViewModel : ObservableObject
     private readonly DumpAnalyzer _dumpAnalyzer;
     private readonly EventLogReader _eventLogReader;
     private readonly DatabaseService _databaseService;
-    private readonly A2ABridgeService _a2aBridge;
 
     public MainViewModel()
     {
@@ -21,7 +20,6 @@ public partial class MainViewModel : ObservableObject
         _dumpAnalyzer = new DumpAnalyzer();
         _eventLogReader = new EventLogReader();
         _databaseService = new DatabaseService(dbPath);
-        _a2aBridge = new A2ABridgeService();
 
         // Veritabanını başlat
         _ = _databaseService.InitializeAsync();
@@ -87,10 +85,8 @@ public partial class MainViewModel : ObservableObject
                         return;
                     }
 
-                    // Veritabanında yoksa Vis'e sor
-                    StatusText = "Vis'ten çözüm araştırılıyor...";
-                    await _a2aBridge.RequestSolutionAsync(result.ErrorCode, result.ErrorName);
-                    StatusText = $"'{result.ErrorCode}' için Vis'e sorgu gönderildi.";
+                    // Veritabanında yoksa — kullanıcıya bilgi ver
+                    StatusText = $"'{result.ErrorCode}' için henüz kayıtlı çözüm yok.";
                 }
             }
 
