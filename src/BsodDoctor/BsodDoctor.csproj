@@ -7,7 +7,6 @@
     <UseWPF>true</UseWPF>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <ApplicationIcon>Resources\bsod-doctor.ico</ApplicationIcon>
     <Title>BSOD Doctor</Title>
     <Description>Windows mavi ekran (BSOD) hatalarını analiz eden ve akıllı çözümler sunan araç.</Description>
     <Company>barankrky</Company>

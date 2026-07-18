@@ -1,4 +1,5 @@
 using System.Data;
+using System.IO;
 using BsodDoctor.Models;
 using Microsoft.Data.Sqlite;
 

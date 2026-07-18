@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.IO;
 using BsodDoctor.Models;
 
 namespace BsodDoctor.Services;
@@ -95,7 +96,7 @@ public class DumpAnalyzer : IDumpAnalyzer
             var psi = new ProcessStartInfo
             {
                 FileName = "powershell",
-                Arguments = $"-Command \"& {{ (Get-WinEvent -Path '{dumpFilePath}' -MaxEvents 1 2>$null).Message }\"",
+                Arguments = "-Command \"& { (Get-WinEvent -Path '" + dumpFilePath + "' -MaxEvents 1 2>$null).Message }\"",
                 RedirectStandardOutput = true,
                 UseShellExecute = false,
                 CreateNoWindow = true,
