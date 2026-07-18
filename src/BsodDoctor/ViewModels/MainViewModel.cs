@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using System.Windows.Input;
 using BsodDoctor.Models;
 using BsodDoctor.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -15,18 +14,15 @@ public partial class MainViewModel : ObservableObject
     private readonly IDatabaseService _databaseService;
     private readonly IDumpAnalyzer _dumpAnalyzer;
     private readonly EventLogReader _eventLogReader;
-    private readonly IA2ABridgeService _a2aBridge;
 
     public MainViewModel(
         IDatabaseService databaseService,
         IDumpAnalyzer dumpAnalyzer,
-        EventLogReader eventLogReader,
-        IA2ABridgeService a2aBridge)
+        EventLogReader eventLogReader)
     {
         _databaseService = databaseService;
         _dumpAnalyzer = dumpAnalyzer;
         _eventLogReader = eventLogReader;
-        _a2aBridge = a2aBridge;
     }
 
     // ===== Observable Properties =====
@@ -127,14 +123,6 @@ public partial class MainViewModel : ObservableObject
                     {
                         result.ErrorDetails = errorDetails;
                         result.ErrorName = errorDetails.ErrorName;
-                    }
-                    else
-                    {
-                        // Bilinmeyen hata — Vis'e sor
-                        StatusMessage = $"Yeni hata: {result.ErrorCode}, Vis araştırıyor...";
-                        var visResult = await _a2aBridge.QueryVisForSolutionAsync(result.ErrorCode);
-                        if (visResult != null)
-                            result.ErrorDetails = visResult;
                     }
                 }
 

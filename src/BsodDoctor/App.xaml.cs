@@ -17,10 +17,9 @@ public partial class App : Application
         var databaseService = new DatabaseService();
         var dumpAnalyzer = new DumpAnalyzer();
         var eventLogReader = new EventLogReader();
-        var a2aBridge = new A2ABridgeService(databaseService);
 
         // ViewModel'i oluştur ve MainWindow'a ata
-        var viewModel = new MainViewModel(databaseService, dumpAnalyzer, eventLogReader, a2aBridge);
+        var viewModel = new MainViewModel(databaseService, dumpAnalyzer, eventLogReader);
 
         var mainWindow = new MainWindow
         {

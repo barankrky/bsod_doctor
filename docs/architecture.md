@@ -13,7 +13,7 @@ BSOD Doctor, Windows mavi ekran (BSOD) hatalarını analiz eden ve kullanıcıya
 | Dump Analiz | Microsoft.Diagnostics.Runtime (ClrMD) |
 | Event Log | System.Diagnostics.Eventing |
 | Veritabanı | SQLite (Microsoft.Data.Sqlite) |
-| A2A İletişim | Hermes A2A Bridge (HTTP/JSON) |
+| A2A İletişim | Hermes A2A Bridge (harici servis — WPF içinde değil) |
 | Paket Yönetimi | NuGet |
 | Build | MSBuild / dotnet CLI |
 
@@ -42,8 +42,6 @@ bsod_doctor/
 │       │   ├── IDumpAnalyzer.cs
 │       │   ├── DumpAnalyzer.cs      # Minidump analizi
 │       │   ├── EventLogReader.cs    # Event Log okuyucu
-│       │   ├── IA2ABridgeService.cs
-│       │   └── A2ABridgeService.cs  # Vis ile A2A iletişim
 │       ├── Data/
 │       │   └── bsod_errors.db   # SQLite veritabanı (embedded)
 │       └── Styles/
@@ -61,8 +59,8 @@ bsod_doctor/
 2. Uygulama Minidump/EventLog/BSOD dosyalarını tarar
 3. Hata kodu tespit edilir
 4. **Varsa**: Yerel SQLite veritabanından çözüm getirilir
-5. **Yoksa**: Vis'e A2A Bridge üzerinden sorgu gönderilir
-6. Vis araştırır, çözümü DB'ye ekler
+5. **Yoksa**: Hata kodu local DB'de yoksa, kayıt "bilinmeyen hata" olarak işaretlenir
+6. Vis (harici agent) periyodik olarak DB'yi güncel tutar
 7. Sonuç kullanıcıya gösterilir
 
 ## Veritabanı Şeması
@@ -72,12 +70,12 @@ bsod_doctor/
 
 Detaylı şema için: `database/schema.sql`
 
-## A2A Köprüsü
+## Vis ile Entegrasyon
 
-Vis (192.168.1.69:8765) ile iletişim için:
-- Endpoint: `POST /api/bsod-query`
-- Auth: Bearer token (VIS_A2A_TOKEN)
-- Vis bilinmeyen hataları araştırır ve DB'yi günceller
+Vis (192.168.1.69:8765) harici bir Hermes agent olarak çalışır:
+- WPF uygulaması **kendi local veritabanını** kullanır
+- Vis, `hermes-a2a-bridge` üzerinden periyodik olarak DB'yi günceller
+- Yeni BSOD hataları araştırıldıkça seed data genişletilir
 
 ## Geliştirme
 
