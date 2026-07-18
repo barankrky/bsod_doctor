@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationIcon>Resources\bsod-doctor.ico</ApplicationIcon>
+    <Title>BSOD Doctor</Title>
+    <Description>Windows mavi ekran (BSOD) hatalarını analiz eden ve akıllı çözümler sunan araç.</Description>
+    <Company>barankrky</Company>
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Diagnostics.Runtime" Version="3.*" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.*" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.*" />
+    <PackageReference Include="System.Management" Version="8.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Data\bsod_errors.db" />
+  </ItemGroup>
+
+</Project>
