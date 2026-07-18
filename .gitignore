@@ -1,0 +1,68 @@
+# .gitignore for C# projects
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# User-specific files
+*.rsuser
+*.userprefs
+
+# Rider
+.idea/
+*.sln.iml
+
+# Visual Studio
+.vs/
+*.code-workspace
+
+# NuGet
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+*.nupkg
+**/[Pp]ackages/repositories.config
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Roslyn
+*.cr
+*.et
+*.pdb
+
+# MSTest test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# NUnit
+*.VisualState.xml
+TestResult.xml
+nunit-*.xml
+
+# Benchmark
+BenchmarkDotNet.Artifacts/
+
+# JetBrains
+*.DotSettings
+*_i.g.cs
+*_a.g.cs
+
+# SonarQube
+.sonarqube/
+
+# Project-specific
+[Ee]xample/
