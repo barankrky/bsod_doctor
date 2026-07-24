@@ -6,7 +6,7 @@
         xmlns:vm="clr-namespace:BsodDoctor.ViewModels"
         xmlns:local="clr-namespace:BsodDoctor"
         mc:Ignorable="d"
-        Title="BSOD Doctor" Height="600" Width="900"
+        Title="BSOD Doctor" Height="700" Width="950"
         WindowStartupLocation="CenterScreen">
 
     <Window.DataContext>
@@ -29,8 +29,38 @@
             </Style.Triggers>
         </Style>
 
+        <Style TargetType="Button" x:Key="SuccessButton">
+            <Setter Property="Background" Value="#2E7D32"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#1B5E20"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style TargetType="Button" x:Key="SecondaryButton">
+            <Setter Property="Background" Value="#757575"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#616161"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
         <Style TargetType="TextBlock" x:Key="SectionTitle">
-            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontSize" Value="15"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Margin" Value="0,12,0,4"/>
             <Setter Property="Foreground" Value="#1A1A1A"/>
@@ -46,49 +76,91 @@
         </Grid.RowDefinitions>
 
         <!-- Başlık -->
-        <StackPanel Grid.Row="0" Margin="0,0,0,12">
+        <StackPanel Grid.Row="0" Margin="0,0,0,8">
             <TextBlock Text="BSOD Doctor" FontSize="28" FontWeight="Bold" Foreground="#D32F2F"/>
-            <TextBlock Text="Mavi Ekran Hatalarına Hızlı Çözüm" FontSize="14" Foreground="#666666"/>
-            <Separator Margin="0,8,0,0"/>
+            <TextBlock Text="Mavi Ekran Hatalarına Hızlı Çözüm" FontSize="13" Foreground="#666666"/>
+            <Separator Margin="0,6,0,0"/>
         </StackPanel>
 
         <!-- Aksiyon Butonları -->
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
-            <Button Content="🔍 Minidump Tara" 
-                    Command="{Binding ScanDumpsCommand}"
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
+            <Button Content="🔍 Minidump Tara"
+                    Command="{Binding ScanNowCommand}"
                     Style="{StaticResource PrimaryButton}"
                     IsEnabled="{Binding IsAnalyzing, Converter={StaticResource BoolInverter}}"/>
-            <Button Content="📋 Event Log Tara"
-                    Command="{Binding ScanEventLogCommand}"
-                    Style="{StaticResource PrimaryButton}"
-                    IsEnabled="{Binding IsAnalyzing, Converter={StaticResource BoolInverter}}"/>
-            <Border Background="#FFF3E0" Padding="12,8" CornerRadius="4" Margin="12,4,0,4">
-                <TextBlock Text="{Binding StatusText}" VerticalAlignment="Center"/>
+            <Button Content="✅ Çözüldü İşaretle"
+                    Command="{Binding MarkResolvedCommand}"
+                    Style="{StaticResource SuccessButton}"
+                    IsEnabled="{Binding HasResult}"/>
+            <Button Content="✕ Temizle"
+                    Command="{Binding ClearResultCommand}"
+                    Style="{StaticResource SecondaryButton}"
+                    IsEnabled="{Binding HasResult}"/>
+
+            <Border Background="#FFF3E0" Padding="12,6" CornerRadius="4" Margin="12,4,0,4" MinWidth="200">
+                <TextBlock Text="{Binding StatusText}" VerticalAlignment="Center" TextWrapping="Wrap"/>
             </Border>
         </StackPanel>
 
         <!-- Sonuç Alanı -->
         <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
             <StackPanel Visibility="{Binding HasResult, Converter={StaticResource BoolToVisibility}}">
-                <!-- Hata Kodu -->
+
+                <!-- Hata Kodu ve Ciddiyet -->
                 <StackPanel>
-                    <TextBlock Text="Hata Kodu" Style="{StaticResource SectionTitle}"/>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Hata Kodu" Style="{StaticResource SectionTitle}"/>
+                        <!-- Severity göstergesi -->
+                        <Border Background="#FFCDD2" Padding="6,2" CornerRadius="3" Margin="12,12,0,4">
+                            <TextBlock FontSize="12" FontWeight="SemiBold">
+                                <Run Text="Ciddiyet: "/>
+                                <Run Text="{Binding Severity}"/><Run Text="/5"/>
+                            </TextBlock>
+                        </Border>
+                    </StackPanel>
+
                     <Border Background="#FFF3E0" Padding="12" CornerRadius="4">
-                        <TextBlock Text="{Binding ErrorCode}" FontSize="18" FontFamily="Consolas" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding ErrorCode}" FontSize="20" FontFamily="Consolas" FontWeight="Bold"/>
                     </Border>
 
                     <!-- Hata Adı -->
                     <TextBlock Text="Hata Adı" Style="{StaticResource SectionTitle}"/>
-                    <TextBlock Text="{Binding ErrorName}" FontSize="14" Margin="0,0,0,8"/>
+                    <Border Background="#E3F2FD" Padding="12" CornerRadius="4">
+                        <TextBlock Text="{Binding ErrorName}" FontSize="16" FontWeight="SemiBold"/>
+                    </Border>
 
                     <!-- Açıklama -->
                     <TextBlock Text="Açıklama" Style="{StaticResource SectionTitle}"/>
-                    <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                    <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Margin="0,0,0,4"/>
+
+                    <!-- Yaygın Nedenler -->
+                    <TextBlock Text="Yaygın Nedenler" Style="{StaticResource SectionTitle}"/>
+                    <Border Background="#FFF8E1" Padding="12" CornerRadius="4" Margin="0,0,0,8">
+                        <TextBlock Text="{Binding CommonCauses}" TextWrapping="Wrap"/>
+                    </Border>
 
                     <!-- Çözüm Adımları -->
                     <TextBlock Text="Çözüm Adımları" Style="{StaticResource SectionTitle}"/>
                     <Border Background="#E8F5E9" Padding="12" CornerRadius="4">
                         <TextBlock Text="{Binding SolutionSteps}" TextWrapping="Wrap"/>
+                    </Border>
+
+                    <!-- İlgili Linkler -->
+                    <TextBlock Text="İlgili Bağlantılar" Style="{StaticResource SectionTitle}"
+                               Visibility="{Binding RelatedKbUrls, Converter={StaticResource BoolToVisibility}}"/>
+                    <TextBlock Text="{Binding RelatedKbUrls}" TextWrapping="Wrap" FontSize="12" Foreground="#1565C0"
+                               Visibility="{Binding RelatedKbUrls, Converter={StaticResource BoolToVisibility}}"/>
+
+                    <!-- Dosya Yolu -->
+                    <TextBlock Text="Kaynak Dosya" Style="{StaticResource SectionTitle}"
+                               Visibility="{Binding DumpFilePath, Converter={StaticResource BoolToVisibility}}"/>
+                    <TextBlock Text="{Binding DumpFilePath}" FontSize="11" FontFamily="Consolas" Foreground="#888"
+                               Visibility="{Binding DumpFilePath, Converter={StaticResource BoolToVisibility}}"/>
+
+                    <!-- Çözüldü Onayı -->
+                    <Border Background="#E8F5E9" Padding="12" CornerRadius="4" Margin="0,12,0,0"
+                            Visibility="{Binding IsResolved, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Text="✅ Bu hata çözüldü olarak işaretlendi." FontWeight="SemiBold" Foreground="#2E7D32"/>
                     </Border>
                 </StackPanel>
             </StackPanel>
@@ -97,12 +169,12 @@
         <!-- Loading -->
         <Border Grid.Row="3" Background="#F5F5F5" Padding="8" CornerRadius="4"
                 Visibility="{Binding IsAnalyzing, Converter={StaticResource BoolToVisibility}}">
-            <TextBlock Text="Analiz ediliyor, lütfen bekleyin..." 
+            <TextBlock Text="Minidump taranıyor..." 
                        HorizontalAlignment="Center" Foreground="#666"/>
         </Border>
 
         <!-- Alt Bilgi -->
-        <TextBlock Grid.Row="3" Text="v0.1.0 — BSOD Doctor" 
+        <TextBlock Grid.Row="3" Text="v0.2.0 — BSOD Doctor — Watch Service" 
                    FontSize="11" Foreground="#999" HorizontalAlignment="Right"/>
     </Grid>
 </Window>

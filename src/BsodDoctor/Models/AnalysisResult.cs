@@ -5,6 +5,7 @@ namespace BsodDoctor.Models;
 /// </summary>
 public class AnalysisResult
 {
+    public int HistoryId { get; set; }
     public string DumpFilePath { get; set; } = string.Empty;
     public string ErrorCode { get; set; } = string.Empty;
     public string ErrorName { get; set; } = string.Empty;
