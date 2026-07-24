@@ -126,7 +126,7 @@ public class BsodWatchService
 
         if (OperatingSystem.IsWindows())
         {
-            // Registry'den gerçek Minidump dizinini oku (Türkçe Windows'ta Minidumps olabilir)
+            // Registry'den gerçek Minidump dizinini oku (REG_EXPAND_SZ tipindeki değerleri genişlet)
             try
             {
                 using var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
@@ -134,12 +134,17 @@ public class BsodWatchService
                 if (key != null)
                 {
                     var minidumpDir = key.GetValue("MinidumpDir") as string;
-                    if (!string.IsNullOrEmpty(minidumpDir) && Directory.Exists(minidumpDir))
-                        dirs.Add(minidumpDir);
+                    if (!string.IsNullOrEmpty(minidumpDir))
+                    {
+                        minidumpDir = Environment.ExpandEnvironmentVariables(minidumpDir);
+                        if (Directory.Exists(minidumpDir))
+                            dirs.Add(minidumpDir);
+                    }
 
                     var dumpFile = key.GetValue("DumpFile") as string;
                     if (!string.IsNullOrEmpty(dumpFile))
                     {
+                        dumpFile = Environment.ExpandEnvironmentVariables(dumpFile);
                         var dumpDir = Path.GetDirectoryName(dumpFile);
                         if (dumpDir != null && File.Exists(dumpFile))
                             dirs.Add(dumpDir);
