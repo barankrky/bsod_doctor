@@ -548,16 +548,5 @@
     "solution_steps": "1. Güvenli Mod'da başlatın\n2. Son yüklenen sürücü veya yazılımı kaldırın\n3. 'sfc /scannow' çalıştırın\n4. Sürücülerinizi güncelleyin\n5. Windows Bellek Tanılama Aracı'nı çalıştırın",
     "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x4a--irql-gt-zero-at-system-service",
     "kesin_cozum": "En kesin çözüm: Güvenli Mod'da son yüklenen sürücüyü kaldır. sfc /scannow çalıştır. Windows Bellek Tanılama Aracı'nı çalıştır."
-  },
-  {
-    "error_code": "0xDEADDEAD",
-    "error_name": "MANUALLY_INITIATED_CRASH",
-    "category": "Yazılım",
-    "severity": 1,
-    "description": "Bu mavi ekran, bir kullanıcı veya yönetici tarafından manuel olarak tetiklendi. Sistemde gerçek bir hata yoktur. Genellikle test veya hata ayıklama amacıyla Ctrl+Scroll Lock tuş kombinasyonu ile oluşturulur.",
-    "common_causes": "• Klavyeden Ctrl+Scroll Lock tuşlarına iki kez basılması\n• SysRq tuş kombinasyonu\n• Test/debug amaçlı manuel crash",
-    "solution_steps": "1. Bu bir donanım/yazılım hatası değildir\n2. Eğer kasten yapılmadıysa, klavyenizde Scroll Lock tuşuna yanlışlıkla basılmış olabilir\n3. Herhangi bir işlem yapmanıza gerek yoktur\n4. Tekrar ediyorsa klavye sürücünüzü kontrol edin",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0xdeaddead--manually-initiated-crash",
-    "kesin_cozum": "Bu hata manuel tetiklenmiştir — gerçek bir sorun yoktur. Klavyede Scroll Lock tuşuna yanlışlıkla basılmış olabilir. İşlem yapmanıza gerek yoktur."
   }
 ]
