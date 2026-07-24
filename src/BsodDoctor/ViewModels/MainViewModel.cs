@@ -1,227 +1,219 @@
-using System.Collections.ObjectModel;
-using BsodDoctor.Models;
-using BsodDoctor.Services;
+using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using BsodDoctor.Models;
+using BsodDoctor.Services;
 
 namespace BsodDoctor.ViewModels;
 
 /// <summary>
-/// Ana pencere ViewModel'i. MVVM pattern ile CommunityToolkit.Mvvm kullanır.
+/// Ana pencere için ViewModel.
+/// Uygulama açılırken BsodWatchService ile minidump taraması yapar.
 /// </summary>
 public partial class MainViewModel : ObservableObject
 {
-    private readonly IDatabaseService _databaseService;
-    private readonly IDumpAnalyzer _dumpAnalyzer;
-    private readonly EventLogReader _eventLogReader;
+    private readonly DatabaseService _databaseService;
+    private BsodWatchService? _watchService;
 
-    public MainViewModel(
-        IDatabaseService databaseService,
-        IDumpAnalyzer dumpAnalyzer,
-        EventLogReader eventLogReader)
+    private int _currentHistoryId;
+
+    public MainViewModel()
     {
-        _databaseService = databaseService;
-        _dumpAnalyzer = dumpAnalyzer;
-        _eventLogReader = eventLogReader;
+        var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+        var dataDir = Path.Combine(baseDir, "Data");
+        Directory.CreateDirectory(dataDir);
+
+        var dbPath = Path.Combine(dataDir, "bsod_errors.db");
+        var seedPath = Path.Combine(baseDir, "..", "..", "..", "..", "database", "seed_data.json");
+
+        // Alternatif seed path (çalışma dizinine göre)
+        if (!File.Exists(seedPath))
+        {
+            var cwdSeed = Path.Combine(Environment.CurrentDirectory, "database", "seed_data.json");
+            if (File.Exists(cwdSeed))
+                seedPath = cwdSeed;
+        }
+
+        _databaseService = new DatabaseService(dbPath);
+
+        // Veritabanını başlat + seed data import
+        _ = InitializeAsync(seedPath);
     }
 
-    // ===== Observable Properties =====
-
-    [ObservableProperty]
-    private ObservableCollection<BsodError> _errorList = [];
-
-    [ObservableProperty]
-    private BsodError? _selectedError;
-
-    [ObservableProperty]
-    private string _searchQuery = string.Empty;
-
-    [ObservableProperty]
-    private string _statusMessage = "Hazır";
-
-    [ObservableProperty]
-    private bool _isBusy;
-
-    [ObservableProperty]
-    private ObservableCollection<AnalysisResult> _analysisHistory = [];
-
-    // ===== Commands =====
-
-    /// <summary>İlk yüklemede tüm hata kodlarını getir</summary>
-    [RelayCommand]
-    private async Task LoadErrorsAsync()
+    private async Task InitializeAsync(string seedPath)
     {
-        IsBusy = true;
-        StatusMessage = "Veritabanı yükleniyor...";
-
         try
         {
-            var errors = await _databaseService.GetAllErrorsAsync();
-            ErrorList = new ObservableCollection<BsodError>(errors);
-            StatusMessage = $"{errors.Count} hata kodu yüklendi";
+            await _databaseService.InitializeAsync(seedPath);
+            StatusText = "Hazır";
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Yükleme hatası: {ex.Message}";
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
-
-    /// <summary>Hata kodunda veya adında arama yap</summary>
-    [RelayCommand]
-    private async Task SearchErrorsAsync()
-    {
-        if (string.IsNullOrWhiteSpace(SearchQuery))
-        {
-            await LoadErrorsAsync();
+            StatusText = $"Veritabanı hatası: {ex.Message}";
             return;
         }
 
-        IsBusy = true;
-        StatusMessage = "Aranıyor...";
+        // Otomatik tarama başlat
+        _ = StartWatchScanAsync();
+    }
+
+    private async Task StartWatchScanAsync()
+    {
+        var watchService = new BsodWatchService(_databaseService, TimeSpan.FromDays(1), TimeSpan.FromDays(1));
+
+        watchService.NewErrorFound += OnNewErrorFound;
+        watchService.ScanCompleted += OnScanCompleted;
+        watchService.ScanError += OnScanError;
+
+        _watchService = watchService;
+
+        StatusText = "Minidump taranıyor...";
+        IsAnalyzing = true;
+
+        await watchService.ScanOnceAsync();
+    }
+
+    private void OnNewErrorFound(AnalysisResult result)
+    {
+        // UI thread'e dispatch
+        App.Current?.Dispatcher?.Invoke(() =>
+        {
+            _currentHistoryId = result.HistoryId;
+            ErrorCode = result.ErrorCode;
+            ErrorName = result.ErrorName;
+            Description = result.Description;
+            SolutionSteps = result.SolutionSteps;
+            CommonCauses = result.CommonCauses;
+            RelatedKbUrls = result.RelatedKbUrls;
+            Severity = result.Severity;
+            DumpFilePath = result.DumpFilePath;
+            HasResult = true;
+            IsResolved = false;
+            StatusText = $"{result.ErrorName} bulundu!";
+        });
+    }
+
+    private void OnScanCompleted()
+    {
+        App.Current?.Dispatcher?.Invoke(() =>
+        {
+            IsAnalyzing = false;
+
+            if (!HasResult)
+            {
+                StatusText = "Yeni bir BSOD bulunamadı.";
+            }
+        });
+    }
+
+    private void OnScanError(string error)
+    {
+        App.Current?.Dispatcher?.Invoke(() =>
+        {
+            StatusText = error;
+        });
+    }
+
+    // ---- Bindable Properties ----
+
+    [ObservableProperty]
+    private string _statusText = "Başlatılıyor...";
+
+    [ObservableProperty]
+    private string _errorCode = string.Empty;
+
+    [ObservableProperty]
+    private string _errorName = string.Empty;
+
+    [ObservableProperty]
+    private string _description = string.Empty;
+
+    [ObservableProperty]
+    private string _solutionSteps = string.Empty;
+
+    [ObservableProperty]
+    private string _commonCauses = string.Empty;
+
+    [ObservableProperty]
+    private string _relatedKbUrls = string.Empty;
+
+    [ObservableProperty]
+    private string _dumpFilePath = string.Empty;
+
+    [ObservableProperty]
+    private int _severity;
+
+    [ObservableProperty]
+    private bool _isAnalyzing;
+
+    [ObservableProperty]
+    private bool _hasResult;
+
+    [ObservableProperty]
+    private bool _isResolved;
+
+    // ---- Commands ----
+
+    /// <summary>
+    /// Taramayı manuel olarak yeniden başlatır.
+    /// </summary>
+    [RelayCommand]
+    private async Task ScanNowAsync()
+    {
+        if (IsAnalyzing) return;
+
+        IsAnalyzing = true;
+        HasResult = false;
+        ErrorCode = string.Empty;
+        ErrorName = string.Empty;
+        Description = string.Empty;
+        SolutionSteps = string.Empty;
+        CommonCauses = string.Empty;
+        RelatedKbUrls = string.Empty;
+        DumpFilePath = string.Empty;
+        Severity = 0;
+        IsResolved = false;
+
+        await StartWatchScanAsync();
+    }
+
+    /// <summary>
+    /// Bulunan hatayı "çözüldü" olarak işaretler.
+    /// </summary>
+    [RelayCommand]
+    private async Task MarkResolvedAsync()
+    {
+        if (_currentHistoryId <= 0) return;
 
         try
         {
-            var results = await _databaseService.SearchErrorsAsync(SearchQuery);
-            ErrorList = new ObservableCollection<BsodError>(results);
-            StatusMessage = $"{results.Count} sonuç bulundu";
+            await _databaseService.MarkAsResolvedAsync(_currentHistoryId, "Kullanıcı tarafından çözüldü olarak işaretlendi.");
+            IsResolved = true;
+            StatusText = "Hata çözüldü olarak işaretlendi.";
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Arama hatası: {ex.Message}";
-        }
-        finally
-        {
-            IsBusy = false;
+            StatusText = $"İşaretleme hatası: {ex.Message}";
         }
     }
 
-    /// <summary>Dump dosyalarını tara ve analiz et</summary>
+    /// <summary>
+    /// Sonucu temizler.
+    /// </summary>
     [RelayCommand]
-    private async Task ScanDumpsAsync()
+    private void ClearResult()
     {
-        IsBusy = true;
-        StatusMessage = "Dump dosyaları taranıyor...";
-
-        try
-        {
-            var dumpFiles = await _dumpAnalyzer.FindDumpFilesAsync();
-            StatusMessage = $"{dumpFiles.Count} dump dosyası bulundu";
-
-            foreach (var dumpFile in dumpFiles)
-            {
-                var result = await _dumpAnalyzer.AnalyzeDumpAsync(dumpFile);
-
-                // Varsa çözümü veritabanından getir
-                if (result.ErrorCode != null)
-                {
-                    var errorDetails = await _databaseService.GetErrorByCodeAsync(result.ErrorCode);
-                    if (errorDetails != null)
-                    {
-                        result.ErrorDetails = errorDetails;
-                        result.ErrorName = errorDetails.ErrorName;
-                    }
-                }
-
-                await _databaseService.SaveAnalysisAsync(result);
-            }
-
-            // Analiz geçmişini yenile
-            await LoadHistoryAsync();
-            StatusMessage = "Tarama tamamlandı";
-        }
-        catch (Exception ex)
-        {
-            StatusMessage = $"Tarama hatası: {ex.Message}";
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
-
-    /// <summary>Event Log'dan BSOD kayıtlarını oku</summary>
-    [RelayCommand]
-    private async Task ReadEventLogAsync()
-    {
-        IsBusy = true;
-        StatusMessage = "Event Log okunuyor...";
-
-        try
-        {
-            var recentEvents = _eventLogReader.GetRecentBsodSummary(15);
-            StatusMessage = $"{recentEvents.Count} BSOD olayı bulundu";
-
-            foreach (var (time, code, message) in recentEvents)
-            {
-                if (code != null)
-                {
-                    var errorDetails = await _databaseService.GetErrorByCodeAsync(code);
-                    var result = new AnalysisResult
-                    {
-                        Timestamp = time,
-                        ErrorCode = code,
-                        ErrorName = errorDetails?.ErrorName ?? code,
-                        ErrorDetails = errorDetails,
-                    };
-                    await _databaseService.SaveAnalysisAsync(result);
-                }
-            }
-
-            await LoadHistoryAsync();
-        }
-        catch (Exception ex)
-        {
-            StatusMessage = $"Event Log hatası: {ex.Message}";
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
-
-    /// <summary>Analiz geçmişini yükle</summary>
-    [RelayCommand]
-    private async Task LoadHistoryAsync()
-    {
-        try
-        {
-            var history = await _databaseService.GetAnalysisHistoryAsync(20);
-            AnalysisHistory = new ObservableCollection<AnalysisResult>(history);
-        }
-        catch
-        {
-            // Geçmiş yüklenemezse sessizce geç
-        }
-    }
-
-    /// <summary>Seçili hatayı çözüldü olarak işaretle</summary>
-    [RelayCommand]
-    private async Task MarkAsResolvedAsync()
-    {
-        if (SelectedError == null) return;
-
-        IsBusy = true;
-
-        try
-        {
-            var history = AnalysisHistory.FirstOrDefault(h =>
-                h.ErrorCode == SelectedError.ErrorCode && !h.Resolved);
-
-            if (history != null)
-            {
-                history.Resolved = true;
-                await _databaseService.SaveAnalysisAsync(history);
-                await LoadHistoryAsync();
-                StatusMessage = "Hata çözüldü olarak işaretlendi";
-            }
-        }
-        finally
-        {
-            IsBusy = false;
-        }
+        HasResult = false;
+        ErrorCode = string.Empty;
+        ErrorName = string.Empty;
+        Description = string.Empty;
+        SolutionSteps = string.Empty;
+        CommonCauses = string.Empty;
+        RelatedKbUrls = string.Empty;
+        DumpFilePath = string.Empty;
+        Severity = 0;
+        IsResolved = false;
+        _currentHistoryId = 0;
+        StatusText = "Hazır";
     }
 }

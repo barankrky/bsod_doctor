@@ -1,29 +1,28 @@
 namespace BsodDoctor.Models;
 
 /// <summary>
-/// Bir BSOD analizi sonucunu temsil eden model.
+/// Bir analiz sonucunu temsil eden model.
 /// </summary>
 public class AnalysisResult
 {
-    public int Id { get; set; }
-    public DateTime Timestamp { get; set; }
-    public string? DumpFilePath { get; set; }
-    public string? ErrorCode { get; set; }
-    public string? ErrorName { get; set; }
-    public bool Resolved { get; set; }
-    public string? UserFeedback { get; set; }
+    public int HistoryId { get; set; }
+    public string DumpFilePath { get; set; } = string.Empty;
+    public string ErrorCode { get; set; } = string.Empty;
+    public string ErrorName { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public string SolutionSteps { get; set; } = string.Empty;
+    public string CommonCauses { get; set; } = string.Empty;
+    public string RelatedKbUrls { get; set; } = string.Empty;
+    public int Severity { get; set; }
+    public DateTime AnalysisTime { get; set; } = DateTime.Now;
 
-    /// <summary>Analiz sonucuyla eşleşen BSOD hata detayı (navigation property)</summary>
-    public BsodError? ErrorDetails { get; set; }
+    /// <summary>
+    /// Çözüm bulundu mu?
+    /// </summary>
+    public bool HasSolution => !string.IsNullOrEmpty(SolutionSteps);
 
-    /// <summary>İnsan tarafından okunabilir özet</summary>
-    public string Summary
-    {
-        get
-        {
-            var status = Resolved ? "✅ Çözüldü" : "❌ Çözülmedi";
-            var error = ErrorName ?? ErrorCode ?? "Bilinmeyen Hata";
-            return $"[{Timestamp:dd.MM.yyyy HH:mm}] {error} — {status}";
-        }
-    }
+    /// <summary>
+    /// Bulunamayan hata kodları için Vis'e sorgu gönderilmeli mi?
+    /// </summary>
+    public bool NeedsRemoteLookup => string.IsNullOrEmpty(ErrorCode) == false && HasSolution == false;
 }

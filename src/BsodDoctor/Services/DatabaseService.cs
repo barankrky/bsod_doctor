@@ -1,245 +1,245 @@
-using System.Data;
 using System.IO;
+using System.Text.Json;
 using BsodDoctor.Models;
 using Microsoft.Data.Sqlite;
 
 namespace BsodDoctor.Services;
 
 /// <summary>
-/// Yerel SQLite veritabanı servisi.
-/// Embedded DB dosyasını kullanır, ilk açılışta seed data ile birlikte gelir.
+/// Yerel SQLite veritabanına erişim sağlayan servis.
+/// Tarama, history, seed data ve resolve işlemlerini yönetir.
 /// </summary>
-public class DatabaseService : IDatabaseService
+public class DatabaseService
 {
     private readonly string _connectionString;
 
-    public DatabaseService()
+    public DatabaseService(string dbPath)
     {
-        var dbPath = Path.Combine(
-            AppDomain.CurrentDomain.BaseDirectory,
-            "Data", "bsod_errors.db"
-        );
-
-        // Embedded kaynaktan çıkaramazsak fallback
-        if (!File.Exists(dbPath))
+        _connectionString = new SqliteConnectionStringBuilder
         {
-            var fallback = Path.Combine(
-                AppContext.BaseDirectory,
-                "Data", "bsod_errors.db"
+            DataSource = dbPath,
+            Mode = SqliteOpenMode.ReadWriteCreate
+        }.ToString();
+    }
+
+    /// <summary>
+    /// Veritabanını oluşturur (yoksa) ve varsa seed data'yı import eder.
+    /// </summary>
+    public async Task InitializeAsync(string? seedDataPath = null, CancellationToken cancellationToken = default)
+    {
+        await using var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync(cancellationToken);
+
+        var command = connection.CreateCommand();
+        command.CommandText = """
+            CREATE TABLE IF NOT EXISTS bsod_errors (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                error_code TEXT NOT NULL UNIQUE,
+                error_name TEXT NOT NULL,
+                category TEXT,
+                description TEXT,
+                solution_steps TEXT,
+                common_causes TEXT,
+                related_kb_urls TEXT,
+                severity INTEGER DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
             );
-            dbPath = fallback;
-        }
 
-        _connectionString = $"Data Source={dbPath};Foreign Keys=True;";
-    }
+            CREATE TABLE IF NOT EXISTS analysis_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                dump_file_path TEXT,
+                error_code TEXT,
+                error_name TEXT,
+                resolved INTEGER DEFAULT 0,
+                user_feedback TEXT
+            );
 
-    private SqliteConnection GetConnection()
-    {
-        var conn = new SqliteConnection(_connectionString);
-        conn.Open();
-        return conn;
-    }
+            CREATE INDEX IF NOT EXISTS idx_bsod_errors_code ON bsod_errors(error_code);
+            CREATE INDEX IF NOT EXISTS idx_analysis_history_timestamp ON analysis_history(timestamp);
+            """;
 
-    private static BsodError MapBsodError(SqliteDataReader reader)
-    {
-        return new BsodError
+        await command.ExecuteNonQueryAsync(cancellationToken);
+
+        // Seed data import (tablo boşsa)
+        if (!string.IsNullOrEmpty(seedDataPath))
         {
-            Id = reader.GetInt32(0),
-            ErrorCode = reader.GetString(1),
-            ErrorName = reader.GetString(2),
-            Category = reader.IsDBNull(3) ? null : reader.GetString(3),
-            Description = reader.IsDBNull(4) ? null : reader.GetString(4),
-            SolutionSteps = reader.IsDBNull(5) ? null : reader.GetString(5),
-            CommonCauses = reader.IsDBNull(6) ? null : reader.GetString(6),
-            RelatedKbUrls = reader.IsDBNull(7) ? null : reader.GetString(7),
-            Severity = reader.GetInt32(8),
-            CreatedAt = reader.GetDateTime(9),
-            UpdatedAt = reader.GetDateTime(10),
-        };
+            await SeedDataFromJsonAsync(seedDataPath, connection, cancellationToken);
+        }
     }
 
-    public async Task<BsodError?> GetErrorByCodeAsync(string errorCode)
+    /// <summary>
+    /// Hata koduna göre veritabanında çözüm ara.
+    /// </summary>
+    public async Task<BsodError?> FindErrorByCodeAsync(string errorCode, CancellationToken cancellationToken = default)
     {
-        using var conn = GetConnection();
-        using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT * FROM bsod_errors WHERE error_code = @code";
-        cmd.Parameters.AddWithValue("@code", errorCode);
+        await using var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync(cancellationToken);
 
-        using var reader = await cmd.ExecuteReaderAsync();
-        if (await reader.ReadAsync())
-            return MapBsodError(reader);
+        var command = connection.CreateCommand();
+        command.CommandText = "SELECT * FROM bsod_errors WHERE error_code = @code LIMIT 1";
+        command.Parameters.AddWithValue("@code", errorCode);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        if (await reader.ReadAsync(cancellationToken))
+        {
+            return new BsodError
+            {
+                Id = reader.GetInt32(0),
+                ErrorCode = reader.GetString(1),
+                ErrorName = reader.GetString(2),
+                Category = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
+                Description = reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
+                SolutionSteps = reader.IsDBNull(5) ? string.Empty : reader.GetString(5),
+                CommonCauses = reader.IsDBNull(6) ? string.Empty : reader.GetString(6),
+                RelatedKbUrls = reader.IsDBNull(7) ? string.Empty : reader.GetString(7),
+                Severity = reader.IsDBNull(8) ? 0 : reader.GetInt32(8),
+                CreatedAt = reader.GetDateTime(9),
+                UpdatedAt = reader.GetDateTime(10)
+            };
+        }
 
         return null;
     }
 
-    public async Task<List<BsodError>> GetAllErrorsAsync()
+    /// <summary>
+    /// Aynı hata kodu için belirtilen cooldown süresi içinde kayıt var mı?
+    /// </summary>
+    public async Task<bool> IsErrorInCooldownAsync(string errorCode, TimeSpan cooldown, CancellationToken cancellationToken = default)
     {
-        var results = new List<BsodError>();
-        using var conn = GetConnection();
-        using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT * FROM bsod_errors ORDER BY severity DESC, error_code";
+        await using var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync(cancellationToken);
 
-        using var reader = await cmd.ExecuteReaderAsync();
-        while (await reader.ReadAsync())
-            results.Add(MapBsodError(reader));
+        var since = DateTime.UtcNow - cooldown;
 
-        return results;
+        var command = connection.CreateCommand();
+        command.CommandText = """
+            SELECT COUNT(1) FROM analysis_history
+            WHERE error_code = @code AND timestamp >= @since
+            LIMIT 1
+            """;
+        command.Parameters.AddWithValue("@code", errorCode);
+        command.Parameters.AddWithValue("@since", since.ToString("O"));
+
+        var count = Convert.ToInt32(await command.ExecuteScalarAsync(cancellationToken));
+        return count > 0;
     }
 
-    public async Task<List<BsodError>> GetErrorsByCategoryAsync(string category)
+    /// <summary>
+    /// Yeni bir analiz kaydını history tablosuna ekler.
+    /// </summary>
+    public async Task<int> SaveAnalysisRecordAsync(AnalysisResult result, CancellationToken cancellationToken = default)
     {
-        var results = new List<BsodError>();
-        using var conn = GetConnection();
-        using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT * FROM bsod_errors WHERE category = @cat ORDER BY severity DESC";
-        cmd.Parameters.AddWithValue("@cat", category);
+        await using var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync(cancellationToken);
 
-        using var reader = await cmd.ExecuteReaderAsync();
-        while (await reader.ReadAsync())
-            results.Add(MapBsodError(reader));
-
-        return results;
-    }
-
-    public async Task<List<BsodError>> GetErrorsBySeverityAsync(int minSeverity)
-    {
-        var results = new List<BsodError>();
-        using var conn = GetConnection();
-        using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT * FROM bsod_errors WHERE severity >= @min ORDER BY severity DESC";
-        cmd.Parameters.AddWithValue("@min", minSeverity);
-
-        using var reader = await cmd.ExecuteReaderAsync();
-        while (await reader.ReadAsync())
-            results.Add(MapBsodError(reader));
-
-        return results;
-    }
-
-    public async Task<List<BsodError>> SearchErrorsAsync(string query)
-    {
-        var results = new List<BsodError>();
-        using var conn = GetConnection();
-        using var cmd = conn.CreateCommand();
-        cmd.CommandText = @"
-            SELECT * FROM bsod_errors 
-            WHERE error_code LIKE @q 
-               OR error_name LIKE @q 
-               OR description LIKE @q
-            ORDER BY severity DESC";
-        cmd.Parameters.AddWithValue("@q, $q", $"%{query}%");
-
-        using var reader = await cmd.ExecuteReaderAsync();
-        while (await reader.ReadAsync())
-            results.Add(MapBsodError(reader));
-
-        return results;
-    }
-
-    public async Task SaveAnalysisAsync(AnalysisResult result)
-    {
-        using var conn = GetConnection();
-        using var cmd = conn.CreateCommand();
-        cmd.CommandText = @"
+        var command = connection.CreateCommand();
+        command.CommandText = """
             INSERT INTO analysis_history (dump_file_path, error_code, error_name, resolved, user_feedback)
-            VALUES (@path, @code, @name, @resolved, @feedback)";
+            VALUES (@path, @code, @name, 0, NULL)
+            RETURNING id
+            """;
+        command.Parameters.AddWithValue("@path", result.DumpFilePath);
+        command.Parameters.AddWithValue("@code", result.ErrorCode);
+        command.Parameters.AddWithValue("@name", result.ErrorName);
 
-        cmd.Parameters.AddWithValue("@path", (object?)result.DumpFilePath ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@code", (object?)result.ErrorCode ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@name", (object?)result.ErrorName ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@resolved", result.Resolved ? 1 : 0);
-        cmd.Parameters.AddWithValue("@feedback", (object?)result.UserFeedback ?? DBNull.Value);
-
-        await cmd.ExecuteNonQueryAsync();
+        var resultId = await command.ExecuteScalarAsync(cancellationToken);
+        return Convert.ToInt32(resultId);
     }
 
-    public async Task<List<AnalysisResult>> GetAnalysisHistoryAsync(int limit = 50)
+    /// <summary>
+    /// Bir analiz kaydını "çözüldü" olarak işaretler.
+    /// </summary>
+    public async Task MarkAsResolvedAsync(int historyId, string? feedback = null, CancellationToken cancellationToken = default)
     {
-        var results = new List<AnalysisResult>();
-        using var conn = GetConnection();
-        using var cmd = conn.CreateCommand();
-        cmd.CommandText = @"
-            SELECT h.*, e.description, e.solution_steps, e.common_causes
-            FROM analysis_history h
-            LEFT JOIN bsod_errors e ON h.error_code = e.error_code
-            ORDER BY h.timestamp DESC
-            LIMIT @lim";
-        cmd.Parameters.AddWithValue("@lim", limit);
+        await using var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync(cancellationToken);
 
-        using var reader = await cmd.ExecuteReaderAsync();
-        while (await reader.ReadAsync())
+        var command = connection.CreateCommand();
+        command.CommandText = """
+            UPDATE analysis_history
+            SET resolved = 1,
+                user_feedback = @feedback
+            WHERE id = @id
+            """;
+        command.Parameters.AddWithValue("@id", historyId);
+        command.Parameters.AddWithValue("@feedback", feedback ?? (object)DBNull.Value);
+
+        await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Seed data JSON'daki hata kayıtlarını veritabanına import eder.
+    /// Tablo boşsa doldurur, doluysa atlar.
+    /// </summary>
+    private async Task SeedDataFromJsonAsync(string jsonPath, SqliteConnection connection, CancellationToken cancellationToken)
+    {
+        if (!File.Exists(jsonPath))
+            return;
+
+        var countCommand = connection.CreateCommand();
+        countCommand.CommandText = "SELECT COUNT(1) FROM bsod_errors";
+        var existingCount = Convert.ToInt32(await countCommand.ExecuteScalarAsync(cancellationToken));
+        if (existingCount > 0)
+            return;
+
+        var json = await File.ReadAllTextAsync(jsonPath, cancellationToken);
+        var errors = JsonSerializer.Deserialize<List<JsonSeedError>>(json);
+        if (errors == null || errors.Count == 0)
+            return;
+
+        var transaction = connection.BeginTransaction();
+
+        try
         {
-            var result = new AnalysisResult
-            {
-                Id = reader.GetInt32(0),
-                Timestamp = reader.GetDateTime(1),
-                DumpFilePath = reader.IsDBNull(2) ? null : reader.GetString(2),
-                ErrorCode = reader.IsDBNull(3) ? null : reader.GetString(3),
-                ErrorName = reader.IsDBNull(4) ? null : reader.GetString(4),
-                Resolved = reader.GetInt32(5) == 1,
-                UserFeedback = reader.IsDBNull(6) ? null : reader.GetString(6),
-            };
+            var command = connection.CreateCommand();
+            command.CommandText = """
+                INSERT OR IGNORE INTO bsod_errors (error_code, error_name, category, description, solution_steps, common_causes, related_kb_urls, severity)
+                VALUES (@code, @name, @cat, @desc, @solutions, @causes, @urls, @sev)
+                """;
 
-            // Varsa hata detaylarını da ekle
-            if (!reader.IsDBNull(7))
+            var pCode = command.Parameters.Add("@code", SqliteType.Text);
+            var pName = command.Parameters.Add("@name", SqliteType.Text);
+            var pCat = command.Parameters.Add("@cat", SqliteType.Text);
+            var pDesc = command.Parameters.Add("@desc", SqliteType.Text);
+            var pSolutions = command.Parameters.Add("@solutions", SqliteType.Text);
+            var pCauses = command.Parameters.Add("@causes", SqliteType.Text);
+            var pUrls = command.Parameters.Add("@urls", SqliteType.Text);
+            var pSev = command.Parameters.Add("@sev", SqliteType.Integer);
+
+            foreach (var error in errors)
             {
-                result.ErrorDetails = new BsodError
-                {
-                    ErrorCode = result.ErrorCode ?? "",
-                    ErrorName = result.ErrorName ?? "",
-                    Description = reader.IsDBNull(7) ? null : reader.GetString(7),
-                    SolutionSteps = reader.IsDBNull(8) ? null : reader.GetString(8),
-                    CommonCauses = reader.IsDBNull(9) ? null : reader.GetString(9),
-                };
+                pCode.Value = error.ErrorCode;
+                pName.Value = error.ErrorName;
+                pCat.Value = error.Category ?? (object)DBNull.Value;
+                pDesc.Value = error.Description ?? (object)DBNull.Value;
+                pSolutions.Value = error.SolutionSteps ?? (object)DBNull.Value;
+                pCauses.Value = error.CommonCauses ?? (object)DBNull.Value;
+                pUrls.Value = error.RelatedKbUrls ?? (object)DBNull.Value;
+                pSev.Value = error.Severity;
+
+                await command.ExecuteNonQueryAsync(cancellationToken);
             }
 
-            results.Add(result);
+            transaction.Commit();
         }
-
-        return results;
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
     }
 
-    public async Task InsertErrorAsync(BsodError error)
+    private sealed class JsonSeedError
     {
-        using var conn = GetConnection();
-        using var cmd = conn.CreateCommand();
-        cmd.CommandText = @"
-            INSERT INTO bsod_errors (error_code, error_name, category, description, solution_steps, common_causes, related_kb_urls, severity)
-            VALUES (@code, @name, @cat, @desc, @steps, @causes, @urls, @sev)";
-
-        cmd.Parameters.AddWithValue("@code", error.ErrorCode);
-        cmd.Parameters.AddWithValue("@name", error.ErrorName);
-        cmd.Parameters.AddWithValue("@cat", (object?)error.Category ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@desc", (object?)error.Description ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@steps", (object?)error.SolutionSteps ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@causes", (object?)error.CommonCauses ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@urls", (object?)error.RelatedKbUrls ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@sev", error.Severity);
-
-        await cmd.ExecuteNonQueryAsync();
-    }
-
-    public async Task UpdateErrorAsync(BsodError error)
-    {
-        using var conn = GetConnection();
-        using var cmd = conn.CreateCommand();
-        cmd.CommandText = @"
-            UPDATE bsod_errors SET
-                error_name = @name, category = @cat, description = @desc,
-                solution_steps = @steps, common_causes = @causes,
-                related_kb_urls = @urls, severity = @sev,
-                updated_at = CURRENT_TIMESTAMP
-            WHERE error_code = @code";
-
-        cmd.Parameters.AddWithValue("@code", error.ErrorCode);
-        cmd.Parameters.AddWithValue("@name", error.ErrorName);
-        cmd.Parameters.AddWithValue("@cat", (object?)error.Category ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@desc", (object?)error.Description ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@steps", (object?)error.SolutionSteps ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@causes", (object?)error.CommonCauses ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@urls", (object?)error.RelatedKbUrls ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@sev", error.Severity);
-
-        await cmd.ExecuteNonQueryAsync();
+        public string ErrorCode { get; set; } = string.Empty;
+        public string ErrorName { get; set; } = string.Empty;
+        public string? Category { get; set; }
+        public int Severity { get; set; }
+        public string? Description { get; set; }
+        public string? CommonCauses { get; set; }
+        public string? SolutionSteps { get; set; }
+        public string? RelatedKbUrls { get; set; }
     }
 }
