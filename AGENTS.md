@@ -132,7 +132,7 @@ Not: Bağımlılıklar NuGet restore ile otomatik gelir (manual `dotnet add` ger
 - **Commit mesajları:** Türkçe, feat/fix/docs prefix'li
 - **MVVM pattern:** View → ViewModel → Model ayrımına uyulur
 - **DB şema değişiklikleri:** `InitializeAsync()` içinde migration ile yapılır
-- **Birim testleri:** `tests/` altında (xUnit) — henüz oluşturulmadı
+|- **Birim testleri:** `tests/BsodDoctor.Tests/` altında (konsol test) — MinidumpReader synthetic dump ile test edildi
 
 ## 🤖 Agent Notları
 
@@ -163,10 +163,10 @@ bsod_doctor/
 │       │   ├── BsodWatchService.cs     # One-shot watcher
 │       │   └── DatabaseService.cs      # SQLite CRUD
 │       └── Data/                       # Runtime DB klasörü
-├── tests/                    # Planlanan test projesi
+├── tests/                    # Birim testleri
 ├── database/
 │   ├── schema.sql
-│   └── seed_data.json        # 20 BSOD hatası
+│   └── seed_data.json        # 51 BSOD hatası
 └── docs/
     └── architecture.md
 ```
@@ -175,7 +175,7 @@ bsod_doctor/
 
 - Uygulama **Windows** hedeflidir (WPF, Minidump yolları)
 - Linux'ta geliştirilir, test için Windows gereklidir veya sahte dump dosyası kullanılır
-- Seed data veritabanına ilk çalıştırmada otomatik import edilir
+- Seed data (51 BSOD hata kodu) veritabanına ilk çalıştırmada otomatik import edilir
 - Bu proje **NextroByte**, **NextroPad (Friday/Burak)** ve **NextroServer (Vis)** olmak üzere üç ortamda ortak geliştirilmektedir
 - Vis kod içinde yer almaz, sadece araştırma ve DB güncelleme için harici çalışır
 - Veritabanı repoya embedded dahil edilmez; çalışma anında `bin/Data/` altında oluşur
