@@ -2,73 +2,83 @@
 
 ## 🧠 Proje Tanımı
 
-**BSOD Doctor**, Windows mavi ekran (Blue Screen of Death) hatalarını analiz eden ve çözüm önerileri sunan bir Windows masaüstü uygulamasıdır. Minidump (.dmp) dosyalarını, Event Viewer loglarını ve BSOD anında oluşan sistem dosyalarını okuyarak hata kodunu tespit eder ve kullanıcıya anlaşılır, adım adım çözüm sunar.
+**BSOD Doctor**, Windows mavi ekran (BSOD) hatalarını analiz eden ve çözüm önerileri sunan bir Windows masaüstü uygulamasıdır. `C:\Windows\Minidump\` dizinindeki `.dmp` dosyalarını ham binary olarak okuyup hata kodunu çıkarır, yerel SQLite veritabanındaki çözümlerle eşleştirir ve kullanıcıya adım adım çözüm sunar.
 
 ## 🎯 Hedef Kitle
 
 - **Son kullanıcı** — teknik bilgisi olmayan, mavi ekran görünce ne yapacağını bilemeyen kişiler
-- Anlaşılır Türkçe/İngilizce çözüm adımları
+- Anlaşılır Türkçe çözüm adımları
 - Karmaşık teknik terimler yerine sade açıklamalar
 
 ## 🏗 Mimari
 
 ```
-┌─────────────────────────────────────────────────────┐
-│               BSOD Doctor (WPF Desktop)              │
-│                                                       │
-│  ┌─────────────┐  ┌──────────────┐  ┌─────────────┐  │
-│  │ Minidump     │  │ Event Viewer │  │ BSOD        │  │
-│  │ Analizörü    │  │ Okuyucu      │  │ Dosya Tarayıcı│  │
-│  └──────┬──────┘  └──────┬───────┘  └──────┬──────┘  │
-│         │                │                  │         │
-│         └────────────────┼──────────────────┘         │
-│                          ▼                           │
-│                 ┌────────────────┐                    │
-│                 │  Çözüm Motoru  │                    │
-│                 │  (Hata → KB)   │                    │
-│                 └───────┬────────┘                    │
-│                         │                            │
-│                 ┌───────▼────────┐                    │
-│                 │   Local DB     │                    │
-│                 │   (SQLite)     │                    │
-│                 └────────────────┘                    │
-└─────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────┐
+│               BSOD Doctor (WPF Desktop)               │
+│                                                        │
+│  Başlangıçta otomatik çalışır:                         │
+│  ┌────────────────────────────────────────────┐       │
+│  │  BsodWatchService (one-shot)               │       │
+│  │  ┌──────────────┐   ┌────────────────┐     │       │
+│  │  │ MinidumpReader│──→│  DatabaseService│     │       │
+│  │  │ (binary       │   │  - cooldown    │     │       │
+│  │  │  parser)      │   │  - sorgulama   │     │       │
+│  │  └──────┬───────┘   │  - seed import  │     │       │
+│  │         │           │  - history      │     │       │
+│  │         │           └───────┬────────┘     │       │
+│  │         ▼                   │              │       │
+│  │  ┌────────────┐            │              │       │
+│  │  │  Cooldown  │◄───────────┘              │       │
+│  │  │  (1 gün)   │                           │       │
+│  │  └────────────┘                           │       │
+│  └────────────────────────────────────────────┘       │
+│                         │                             │
+│                         ▼                             │
+│               ┌──────────────────┐                    │
+│               │  MainViewModel   │                    │
+│               │  (event → UI)    │                    │
+│               └────────┬────────┘                     │
+│                        │                              │
+│               ┌────────▼────────┐                     │
+│               │   MainWindow    │                     │
+│               │  (WPF + XAML)   │                     │
+│               └─────────────────┘                     │
+└──────────────────────────────────────────────────────┘
 ```
 
 ### Bileşenler
 
-1. **Minidump Analizörü** — `.dmp` dosyalarını okuyup hata kodunu ve crash context'ini çıkarır
-2. **Event Viewer Okuyucu** — Windows Event Log'dan BSOD ile ilgili kayıtları okur
-3. **BSOD Dosya Tarayıcı** — `%SystemRoot%\Minidump\`, `%SystemRoot%\MEMORY.DMP` gibi yolları tarar
-4. **Çözüm Motoru** — Hata koduna göre local DB'den çözüm önerisini getirir
-5. **Local Veritabanı** — Hata kodu ↔ çözüm eşleştirmelerini tutar (SQLite)
+1. **MinidumpReader** — `.dmp` dosyasını ham binary okuyup ExceptionStream'den BugCheckCode çıkarır. ClrMD kullanmaz.
+2. **BsodWatchService** — One-shot watcher. Uygulama açılırken Minidump dizinini tarar, son 1 günde değişmiş dosyaları okur, cooldown kontrolü yapar, yeni hata bulursa UI'a event fırlatır. Sürekli beklemez — tara, bul/kapat, bitir.
+3. **DatabaseService** — SQLite bağlantısı, tablo yönetimi, seed data import, history kaydı ve cooldown sorgulaması.
+4. **MainViewModel** — CommunityToolkit.Mvvm ile ObservableObject, WatchService event'lerine abone olur, UI property'lerini günceller.
 
 ## 🛠 Teknoloji Yığını
 
-|| Katman | Teknoloji |
-||--------|-----------|
-|| **UI** | WPF (.NET 10) — XAML + MVVM |
-|| **Dil** | C# 12 |
-|| **Dump Analiz** | Microsoft.Diagnostics.Runtime (ClrMD) |
-|| **Event Log** | System.Diagnostics.Eventing |
-|| **Veritabanı** | SQLite (Microsoft.Data.Sqlite) |
-|| **Paket Yönetimi** | NuGet |
-|| **Build** | MSBuild / dotnet CLI |
-|| **Sürüm Kontrol** | Git + GitHub |
+| Katman | Teknoloji |
+|--------|-----------|
+| **UI** | WPF (.NET 10) — XAML + MVVM |
+| **Dil** | C# 12 |
+| **Dump Analiz** | Ham binary parser (ClrMD kullanılmaz) |
+| **Veritabanı** | SQLite (Microsoft.Data.Sqlite + SQLitePCLRaw) |
+| **MVVM Toolkit** | CommunityToolkit.Mvvm 8.4.2 |
+| **Paket Yönetimi** | NuGet |
+| **Build** | dotnet CLI |
+| **Sürüm Kontrol** | Git + GitHub |
 
-## 🗄 Veritabanı Şeması (Taslak)
+## 🗄 Veritabanı Şeması
 
 ```sql
 CREATE TABLE bsod_errors (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     error_code TEXT NOT NULL UNIQUE,          -- 0x0000001A, 0x00000050
-    error_name TEXT NOT NULL,                  -- MEMORY_MANAGEMENT, PAGE_FAULT_IN_NONPAGED_AREA
-    category TEXT,                             -- Donanım, Sürücü, Yazılım, Bilinmiyor
-    description TEXT,                          -- Kısa açıklama
-    solution_steps TEXT,                       -- Adım adım çözüm (JSON veya Markdown)
-    common_causes TEXT,                        -- Yaygın nedenler
-    related_kb_urls TEXT,                      -- Microsoft KB linkleri
-    severity INTEGER,                          -- 1-5 arası ciddiyet
+    error_name TEXT NOT NULL,                 -- MEMORY_MANAGEMENT
+    category TEXT,                            -- Donanım, Sürücü, Yazılım
+    description TEXT,                         -- Kısa açıklama
+    solution_steps TEXT,                      -- Adım adım çözüm (Markdown)
+    common_causes TEXT,                       -- Yaygın nedenler
+    related_kb_urls TEXT,                     -- Microsoft KB linkleri
+    severity INTEGER DEFAULT 0,              -- 1-5 arası ciddiyet
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -79,21 +89,26 @@ CREATE TABLE analysis_history (
     dump_file_path TEXT,
     error_code TEXT,
     error_name TEXT,
-    resolved BOOLEAN DEFAULT 0,
-    user_feedback TEXT,
-    FOREIGN KEY (error_code) REFERENCES bsod_errors(error_code)
+    resolved INTEGER DEFAULT 0,
+    user_feedback TEXT
 );
+
+CREATE INDEX idx_bsod_errors_code ON bsod_errors(error_code);
+CREATE INDEX idx_analysis_history_timestamp ON analysis_history(timestamp);
 ```
 
-## 🔄 Veri Akışı
+## 🔄 Veri Akışı (Otomatik Tarama)
 
-1. Kullanıcı "Tara" butonuna basar
-2. Uygulama Minidump/EventLog/BSOD dosyalarını tarar
-3. Hata kodu tespit edilir
-4. Yerel veritabanında sorgulanır
-5. **Varsa**: Çözüm doğrudan gösterilir
-6. **Yoksa**: Kullanıcıya henüz kayıtlı çözüm olmadığı bildirilir
-   (Veritabanı güncellemeleri Vis tarafından harici olarak yapılır)
+1. Uygulama başlatılır → `DatabaseService.InitializeAsync()` çalışır (tablolar + seed data)
+2. `BsodWatchService.ScanOnceAsync()` tetiklenir
+3. `C:\Windows\Minidump\` dizininde son **1 günde** değişmiş `.dmp` dosyaları taranır
+4. Her dosya `MinidumpReader.ReadBugCheckCode()` ile parse edilir
+5. Bulunan hata kodu `DatabaseService.IsErrorInCooldownAsync()` ile kontrol edilir (son 24 saatte aynı hata kaydı varsa atlanır)
+6. **Yeni hata bulunduysa**: History'ye kaydedilir, `NewErrorFound` event'i tetiklenir, UI otomatik güncellenir
+7. **Bulunamadıysa**: `ScanCompleted` event'i tetiklenir, uygulama "Yeni BSOD bulunamadı" durumunda kalır
+8. Servis kapanır — arkada beklemez
+
+Manuel tarama için "Minidump Tara" butonu kullanılır.
 
 ## 🚀 Başlangıç
 
@@ -103,37 +118,31 @@ git clone https://github.com/barankrky/bsod_doctor.git
 cd bsod_doctor
 
 # .NET SDK kontrolü
-dotnet --version  # >= 8.0 olmalı
-
-# WPF projesini oluştur
-dotnet new wpf -n BsodDoctor -o src/BsodDoctor
-
-# Bağımlılıkları yükle
-dotnet add src/BsodDoctor package Microsoft.Diagnostics.Runtime
-dotnet add src/BsodDoctor package Microsoft.Data.Sqlite
-dotnet add src/BsodDoctor package CommunityToolkit.Mvvm  # MVVM için
+dotnet --version  # >= 10.0 olmalı
 
 # Build
 dotnet build src/BsodDoctor
 ```
 
+Not: Bağımlılıklar NuGet restore ile otomatik gelir (manual `dotnet add` gerekmez).
+
 ## 🔧 Geliştirme Konvansiyonları
 
-- **Branch modeli:** `master` — kararlı, `dev` — geliştirme
-- **Commit mesajları:** Türkçe, açıklayıcı (örn: `minidump analizörü eklendi`)
-- **MVVM pattern:** View → ViewModel → Model ayrımına uyulacak
-- **Testler:** Birim testleri `tests/` altında (xUnit)
-- **DB şema değişiklikleri:** Migration script'i ile yapılacak
+- **Branch modeli:** `master` — kararlı, `feature/*` — geliştirme
+- **Commit mesajları:** Türkçe, feat/fix/docs prefix'li
+- **MVVM pattern:** View → ViewModel → Model ayrımına uyulur
+- **DB şema değişiklikleri:** `InitializeAsync()` içinde migration ile yapılır
+- **Birim testleri:** `tests/` altında (xUnit) — henüz oluşturulmadı
 
 ## 🤖 Agent Notları
 
 | Makine | Agent | Rol |
 |--------|-------|-----|
-| **NextroByte** (bu PC) | — *(ben)* | WPF uygulamasını geliştirir, kod yazar. Baran ile birlikte çalışır. |
-| **NextroPad** (Baran'ın laptop) | **Friday** | Burak (kuzen) tarafından kullanılır. Proje geliştirmeye yardımcı olur. |
-| **NextroServer** (homelab, 192.168.1.69) | **Vis** | BSOD araştırması yapar, veritabanını doldurur ve günceller. **Kod içinde yer almaz.** |
+| **NextroByte** (bu PC) | Baran | WPF uygulaması geliştirir, kod yazar |
+| **NextroPad** (Burak'ın laptop) | **Friday** | Burak tarafından kullanılır, proje geliştirmeye yardımcı olur |
+| **NextroServer** (192.168.1.69) | **Vis** | BSOD araştırması yapar, veritabanını doldurur. Kod içinde yer almaz |
 
-## 📂 Proje Dizini (Planlanan)
+## 📂 Proje Dizini
 
 ```
 bsod_doctor/
@@ -141,33 +150,32 @@ bsod_doctor/
 ├── README.md
 ├── src/
 │   └── BsodDoctor/           # WPF uygulaması
-│       ├── App.xaml
-│       ├── MainWindow.xaml
+│       ├── App.xaml / .cs
+│       ├── MainWindow.xaml / .cs
+│       ├── BoolInverterConverter.cs
 │       ├── ViewModels/
 │       │   └── MainViewModel.cs
-│       ├── Views/
 │       ├── Models/
 │       │   ├── BsodError.cs
 │       │   └── AnalysisResult.cs
 │       ├── Services/
-│       │   ├── IDumpAnalyzer.cs
-│       │   ├── DumpAnalyzer.cs
-│       │   ├── EventLogReader.cs
-│       │   └── DatabaseService.cs
-│       └── Data/
-│           └── bsod_errors.db
-├── tests/
-│   └── BsodDoctor.Tests/
+│       │   ├── MinidumpReader.cs       # Binary .dmp parser
+│       │   ├── BsodWatchService.cs     # One-shot watcher
+│       │   └── DatabaseService.cs      # SQLite CRUD
+│       └── Data/                       # Runtime DB klasörü
+├── tests/                    # Planlanan test projesi
 ├── database/
-│   └── schema.sql
+│   ├── schema.sql
+│   └── seed_data.json        # 20 BSOD hatası
 └── docs/
     └── architecture.md
 ```
 
 ## 📌 Notlar
 
+- Uygulama **Windows** hedeflidir (WPF, Minidump yolları)
+- Linux'ta geliştirilir, test için Windows gereklidir veya sahte dump dosyası kullanılır
+- Seed data veritabanına ilk çalıştırmada otomatik import edilir
 - Bu proje **NextroByte**, **NextroPad (Friday/Burak)** ve **NextroServer (Vis)** olmak üzere üç ortamda ortak geliştirilmektedir
-- Vis kod içinde yer almaz, sadece araştırma ve DB güncelleme için harici olarak çalışır
-- Frontend WPF ile başlıyor, ileride ihtiyaca göre değişebilir
-- Kullanıcı arayüzü sade ve anlaşılır olacak, son kullanıcı odaklı
-- Veritabanı repoya embedded olarak dahil edilecek (başlangıç datası ile)
+- Vis kod içinde yer almaz, sadece araştırma ve DB güncelleme için harici çalışır
+- Veritabanı repoya embedded dahil edilmez; çalışma anında `bin/Data/` altında oluşur
