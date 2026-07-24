@@ -47,9 +47,6 @@ public class DatabaseService
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
             );
 
-            -- Migration: eski veritabanlarına kesin_cozum sütunu ekle (varsa hata yok)
-            ALTER TABLE bsod_errors ADD COLUMN kesin_cozum TEXT;
-
             CREATE TABLE IF NOT EXISTS analysis_history (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -65,6 +62,30 @@ public class DatabaseService
             """;
 
         await command.ExecuteNonQueryAsync(cancellationToken);
+
+        // Migration: kesin_cozum sütunu yoksa ekle (eski veritabanları için)
+        var hasKesinCozum = false;
+        var pragmaCmd = connection.CreateCommand();
+        pragmaCmd.CommandText = "PRAGMA table_info(bsod_errors)";
+        await using (var reader = await pragmaCmd.ExecuteReaderAsync(cancellationToken))
+        {
+            while (await reader.ReadAsync(cancellationToken))
+            {
+                var colName = reader.GetString(1); // column name is at index 1
+                if (colName == "kesin_cozum")
+                {
+                    hasKesinCozum = true;
+                    break;
+                }
+            }
+        }
+
+        if (!hasKesinCozum)
+        {
+            var alterCmd = connection.CreateCommand();
+            alterCmd.CommandText = "ALTER TABLE bsod_errors ADD COLUMN kesin_cozum TEXT";
+            await alterCmd.ExecuteNonQueryAsync(cancellationToken);
+        }
 
         // Seed data import (tablo boşsa)
         if (!string.IsNullOrEmpty(seedDataPath))
