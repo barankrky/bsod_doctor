@@ -126,19 +126,48 @@ public class BsodWatchService
 
         if (OperatingSystem.IsWindows())
         {
-            var minidumpDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Minidump");
-            if (Directory.Exists(minidumpDir))
-                dirs.Add(minidumpDir);
+            // Registry'den gerçek Minidump dizinini oku (Türkçe Windows'ta Minidumps olabilir)
+            try
+            {
+                using var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
+                    @"SYSTEM\CurrentControlSet\Control\CrashControl");
+                if (key != null)
+                {
+                    var minidumpDir = key.GetValue("MinidumpDir") as string;
+                    if (!string.IsNullOrEmpty(minidumpDir) && Directory.Exists(minidumpDir))
+                        dirs.Add(minidumpDir);
 
-            // MEMORY.DMP kontrolü
-            var windowsDir = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
-            var memoryDmp = Path.Combine(windowsDir, "MEMORY.DMP");
-            if (File.Exists(memoryDmp))
-                dirs.Add(windowsDir);
+                    var dumpFile = key.GetValue("DumpFile") as string;
+                    if (!string.IsNullOrEmpty(dumpFile))
+                    {
+                        var dumpDir = Path.GetDirectoryName(dumpFile);
+                        if (dumpDir != null && File.Exists(dumpFile))
+                            dirs.Add(dumpDir);
+                    }
+                }
+            }
+            catch
+            {
+                // Registry erişilemezse fallback'e geç
+            }
+
+            // Fallback: registry okunamazsa varsayılan yolları dene
+            if (dirs.Count == 0)
+            {
+                var minidumpDir = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Minidump");
+                if (Directory.Exists(minidumpDir))
+                    dirs.Add(minidumpDir);
+
+                var memoryDmp = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.Windows), "MEMORY.DMP");
+                if (File.Exists(memoryDmp))
+                    dirs.Add(Path.GetDirectoryName(memoryDmp)!);
+            }
         }
         else
         {
-            // Linux test ortamı — Windows çalışmadığı için test .dmp dosyaları
+            // Linux test ortamı — test .dmp dosyaları
             var testDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestDumps");
             if (Directory.Exists(testDir))
                 dirs.Add(testDir);
