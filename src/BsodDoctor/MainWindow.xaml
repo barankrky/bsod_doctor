@@ -149,6 +149,12 @@
                         <TextBlock Text="{Binding SolutionSteps}" TextWrapping="Wrap"/>
                     </Border>
 
+                    <!-- Kesin Çözüm -->
+                    <TextBlock Text="⭐ Kesin Çözüm" Style="{StaticResource SectionTitle}"/>
+                    <Border Background="#E8F5E9" Padding="12" CornerRadius="4" Margin="0,0,0,8">
+                        <TextBlock Text="{Binding KesinCozum}" TextWrapping="Wrap" FontWeight="SemiBold"/>
+                    </Border>
+
                     <!-- İlgili Linkler -->
                     <TextBlock Text="İlgili Bağlantılar" Style="{StaticResource SectionTitle}"
                                Visibility="{Binding RelatedKbUrls, Converter={StaticResource BoolToVisibility}}"/>

@@ -13,7 +13,7 @@ namespace BsodDoctor.ViewModels;
 public partial class MainViewModel : ObservableObject
 {
     private readonly DatabaseService _databaseService;
-    private BsodWatchService? _watchService;
+    private readonly BsodWatchService _watchService;
 
     private int _currentHistoryId;
 
@@ -35,9 +35,13 @@ public partial class MainViewModel : ObservableObject
         }
 
         _databaseService = new DatabaseService(dbPath);
+        _watchService = new BsodWatchService(_databaseService, TimeSpan.FromDays(1), TimeSpan.FromDays(1));
 
         // Veritabanını başlat + seed data import
         _ = InitializeAsync(seedPath);
+
+        // Otomatik tarama başlat
+        _ = StartWatchScanAsync();
     }
 
     private async Task InitializeAsync(string seedPath)
@@ -50,68 +54,51 @@ public partial class MainViewModel : ObservableObject
         catch (Exception ex)
         {
             StatusText = $"Veritabanı hatası: {ex.Message}";
-            return;
         }
-
-        // Otomatik tarama başlat
-        _ = StartWatchScanAsync();
     }
 
+    /// <summary>
+    /// One-shot tarama yap, sonucu doğrudan UI'a yansıt.
+    /// </summary>
     private async Task StartWatchScanAsync()
     {
-        var watchService = new BsodWatchService(_databaseService, TimeSpan.FromDays(1), TimeSpan.FromDays(1));
-
-        watchService.NewErrorFound += OnNewErrorFound;
-        watchService.ScanCompleted += OnScanCompleted;
-        watchService.ScanError += OnScanError;
-
-        _watchService = watchService;
-
         StatusText = "Minidump taranıyor...";
         IsAnalyzing = true;
 
-        await watchService.ScanOnceAsync();
-    }
-
-    private void OnNewErrorFound(AnalysisResult result)
-    {
-        // UI thread'e dispatch
-        App.Current?.Dispatcher?.Invoke(() =>
+        try
         {
-            _currentHistoryId = result.HistoryId;
-            ErrorCode = result.ErrorCode;
-            ErrorName = result.ErrorName;
-            Description = result.Description;
-            SolutionSteps = result.SolutionSteps;
-            CommonCauses = result.CommonCauses;
-            RelatedKbUrls = result.RelatedKbUrls;
-            Severity = result.Severity;
-            DumpFilePath = result.DumpFilePath;
-            HasResult = true;
-            IsResolved = false;
-            StatusText = $"{result.ErrorName} bulundu!";
-        });
-    }
+            var result = await _watchService.ScanOnceAsync();
 
-    private void OnScanCompleted()
-    {
-        App.Current?.Dispatcher?.Invoke(() =>
-        {
-            IsAnalyzing = false;
-
-            if (!HasResult)
+            if (result != null)
+            {
+                // Yeni hata bulundu — UI'ı güncelle
+                _currentHistoryId = result.HistoryId;
+                ErrorCode = result.ErrorCode;
+                ErrorName = result.ErrorName;
+                Description = result.Description;
+                SolutionSteps = result.SolutionSteps;
+                KesinCozum = result.KesinCozum;
+                CommonCauses = result.CommonCauses;
+                RelatedKbUrls = result.RelatedKbUrls;
+                Severity = result.Severity;
+                DumpFilePath = result.DumpFilePath;
+                HasResult = true;
+                IsResolved = false;
+                StatusText = $"{result.ErrorName} bulundu!";
+            }
+            else
             {
                 StatusText = "Yeni bir BSOD bulunamadı.";
             }
-        });
-    }
-
-    private void OnScanError(string error)
-    {
-        App.Current?.Dispatcher?.Invoke(() =>
+        }
+        catch (Exception ex)
         {
-            StatusText = error;
-        });
+            StatusText = $"Tarama hatası: {ex.Message}";
+        }
+        finally
+        {
+            IsAnalyzing = false;
+        }
     }
 
     // ---- Bindable Properties ----
@@ -130,6 +117,9 @@ public partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     private string _solutionSteps = string.Empty;
+
+    [ObservableProperty]
+    private string _kesinCozum = string.Empty;
 
     [ObservableProperty]
     private string _commonCauses = string.Empty;
@@ -168,6 +158,7 @@ public partial class MainViewModel : ObservableObject
         ErrorName = string.Empty;
         Description = string.Empty;
         SolutionSteps = string.Empty;
+        KesinCozum = string.Empty;
         CommonCauses = string.Empty;
         RelatedKbUrls = string.Empty;
         DumpFilePath = string.Empty;
@@ -208,6 +199,7 @@ public partial class MainViewModel : ObservableObject
         ErrorName = string.Empty;
         Description = string.Empty;
         SolutionSteps = string.Empty;
+        KesinCozum = string.Empty;
         CommonCauses = string.Empty;
         RelatedKbUrls = string.Empty;
         DumpFilePath = string.Empty;

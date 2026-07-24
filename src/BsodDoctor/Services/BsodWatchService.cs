@@ -1,33 +1,18 @@
 using System.IO;
 using BsodDoctor.Models;
-using BsodDoctor.Services;
 
 namespace BsodDoctor.Services;
 
 /// <summary>
-/// Minidump dizinini tarayan, yeni hataları bulan ve sonucu bildiren one-shot servis.
-/// Sürekli beklemez — tara, bul, bildir, kapan.
+/// Minidump dizinini tarayan, yeni hataları bulan ve sonucu döndüren one-shot servis.
+/// Sürekli beklemez — tara, bul, döndür, kapan.
+/// Event-driven değil, direkt <see cref="AnalysisResult"/> döndürür.
 /// </summary>
 public class BsodWatchService
 {
     private readonly DatabaseService _db;
     private readonly TimeSpan _fileAgeLimit;
     private readonly TimeSpan _cooldown;
-
-    /// <summary>
-    /// Yeni bir hata bulunduğunda tetiklenir.
-    /// </summary>
-    public event Action<AnalysisResult>? NewErrorFound;
-
-    /// <summary>
-    /// Tarama tamamlandığında, hata bulunamadığında tetiklenir.
-    /// </summary>
-    public event Action? ScanCompleted;
-
-    /// <summary>
-    /// Tarama sırasında oluşan hatalar.
-    /// </summary>
-    public event Action<string>? ScanError;
 
     public BsodWatchService(DatabaseService db, TimeSpan? fileAgeLimit = null, TimeSpan? cooldown = null)
     {
@@ -37,9 +22,10 @@ public class BsodWatchService
     }
 
     /// <summary>
-    /// One-shot tarama başlatır. Tamamlanınca otomatik biter.
+    /// One-shot tarama. Yeni hata bulunursa <see cref="AnalysisResult"/> döndürür,
+    /// bulunamazsa null döndürür.
     /// </summary>
-    public async Task ScanOnceAsync(CancellationToken cancellationToken = default)
+    public async Task<AnalysisResult?> ScanOnceAsync(CancellationToken cancellationToken = default)
     {
         try
         {
@@ -47,18 +33,12 @@ public class BsodWatchService
             var dumpDirs = GetDumpDirectories();
 
             if (dumpDirs.Count == 0)
-            {
-                ScanCompleted?.Invoke();
-                return;
-            }
+                return null;
 
             // 2) Son 1 günde değişmiş .dmp dosyalarını bul
             var dumpFiles = FindRecentDumpFiles(dumpDirs);
             if (dumpFiles.Count == 0)
-            {
-                ScanCompleted?.Invoke();
-                return;
-            }
+                return null;
 
             // 3) Her dosyayı dene — ilk yeni hatayı bulunca dur
             foreach (var dumpFile in dumpFiles)
@@ -86,6 +66,7 @@ public class BsodWatchService
                     ErrorName = bsodError?.ErrorName ?? "Bilinmeyen Hata",
                     Description = bsodError?.Description ?? "Bu hata kodu için henüz kayıtlı çözüm yok.",
                     SolutionSteps = bsodError?.SolutionSteps ?? string.Empty,
+                    KesinCozum = bsodError?.KesinCozum ?? string.Empty,
                     CommonCauses = bsodError?.CommonCauses ?? string.Empty,
                     RelatedKbUrls = bsodError?.RelatedKbUrls ?? string.Empty,
                     Severity = bsodError?.Severity ?? 0,
@@ -96,23 +77,19 @@ public class BsodWatchService
                 var historyId = await _db.SaveAnalysisRecordAsync(result, cancellationToken);
                 result.HistoryId = historyId;
 
-                // UI'a bildir
-                NewErrorFound?.Invoke(result);
-                ScanCompleted?.Invoke();
-                return; // sadece ilk yeni hatayı göster
+                return result; // sadece ilk yeni hatayı döndür
             }
 
             // Tüm dosyalar kontrol edildi, yeni hata yok
-            ScanCompleted?.Invoke();
+            return null;
         }
         catch (OperationCanceledException)
         {
-            // iptal edildi, sessiz bit
+            return null;
         }
         catch (Exception ex)
         {
-            ScanError?.Invoke($"Tarama sırasında hata: {ex.Message}");
-            ScanCompleted?.Invoke();
+            throw new InvalidOperationException($"Tarama sırasında hata: {ex.Message}", ex);
         }
     }
 
@@ -184,10 +161,10 @@ public class BsodWatchService
     /// <summary>
     /// Belirtilen dizinlerde son 1 günde değişmiş .dmp dosyalarını bulur.
     /// </summary>
-    private static List<string> FindRecentDumpFiles(List<string> directories)
+    private List<string> FindRecentDumpFiles(List<string> directories)
     {
         var files = new List<string>();
-        var cutoff = DateTime.UtcNow - TimeSpan.FromDays(1);
+        var cutoff = DateTime.UtcNow - _fileAgeLimit;
 
         foreach (var dir in directories)
         {

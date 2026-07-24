@@ -11,6 +11,7 @@ public class AnalysisResult
     public string ErrorName { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public string SolutionSteps { get; set; } = string.Empty;
+    public string KesinCozum { get; set; } = string.Empty;
     public string CommonCauses { get; set; } = string.Empty;
     public string RelatedKbUrls { get; set; } = string.Empty;
     public int Severity { get; set; }
