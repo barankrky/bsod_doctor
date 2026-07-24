@@ -11,6 +11,7 @@ public class BsodError
     public string? Category { get; set; }
     public string? Description { get; set; }
     public string? SolutionSteps { get; set; }
+    public string? KesinCozum { get; set; }
     public string? CommonCauses { get; set; }
     public string? RelatedKbUrls { get; set; }
     public int Severity { get; set; }

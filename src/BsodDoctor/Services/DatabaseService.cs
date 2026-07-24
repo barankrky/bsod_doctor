@@ -39,12 +39,16 @@ public class DatabaseService
                 category TEXT,
                 description TEXT,
                 solution_steps TEXT,
+                kesin_cozum TEXT,
                 common_causes TEXT,
                 related_kb_urls TEXT,
                 severity INTEGER DEFAULT 0,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
             );
+
+            -- Migration: eski veritabanlarına kesin_cozum sütunu ekle (varsa hata yok)
+            ALTER TABLE bsod_errors ADD COLUMN kesin_cozum TEXT;
 
             CREATE TABLE IF NOT EXISTS analysis_history (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -92,11 +96,12 @@ public class DatabaseService
                 Category = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
                 Description = reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
                 SolutionSteps = reader.IsDBNull(5) ? string.Empty : reader.GetString(5),
-                CommonCauses = reader.IsDBNull(6) ? string.Empty : reader.GetString(6),
-                RelatedKbUrls = reader.IsDBNull(7) ? string.Empty : reader.GetString(7),
-                Severity = reader.IsDBNull(8) ? 0 : reader.GetInt32(8),
-                CreatedAt = reader.GetDateTime(9),
-                UpdatedAt = reader.GetDateTime(10)
+                KesinCozum = reader.IsDBNull(6) ? string.Empty : reader.GetString(6),
+                CommonCauses = reader.IsDBNull(7) ? string.Empty : reader.GetString(7),
+                RelatedKbUrls = reader.IsDBNull(8) ? string.Empty : reader.GetString(8),
+                Severity = reader.IsDBNull(9) ? 0 : reader.GetInt32(9),
+                CreatedAt = reader.GetDateTime(10),
+                UpdatedAt = reader.GetDateTime(11)
             };
         }
 
@@ -195,8 +200,8 @@ public class DatabaseService
         {
             var command = connection.CreateCommand();
             command.CommandText = """
-                INSERT OR IGNORE INTO bsod_errors (error_code, error_name, category, description, solution_steps, common_causes, related_kb_urls, severity)
-                VALUES (@code, @name, @cat, @desc, @solutions, @causes, @urls, @sev)
+                INSERT OR IGNORE INTO bsod_errors (error_code, error_name, category, description, solution_steps, kesin_cozum, common_causes, related_kb_urls, severity)
+                VALUES (@code, @name, @cat, @desc, @solutions, @kesinCozum, @causes, @urls, @sev)
                 """;
 
             var pCode = command.Parameters.Add("@code", SqliteType.Text);
@@ -204,6 +209,7 @@ public class DatabaseService
             var pCat = command.Parameters.Add("@cat", SqliteType.Text);
             var pDesc = command.Parameters.Add("@desc", SqliteType.Text);
             var pSolutions = command.Parameters.Add("@solutions", SqliteType.Text);
+            var pKesinCozum = command.Parameters.Add("@kesinCozum", SqliteType.Text);
             var pCauses = command.Parameters.Add("@causes", SqliteType.Text);
             var pUrls = command.Parameters.Add("@urls", SqliteType.Text);
             var pSev = command.Parameters.Add("@sev", SqliteType.Integer);
@@ -215,6 +221,7 @@ public class DatabaseService
                 pCat.Value = error.Category ?? (object)DBNull.Value;
                 pDesc.Value = error.Description ?? (object)DBNull.Value;
                 pSolutions.Value = error.SolutionSteps ?? (object)DBNull.Value;
+                pKesinCozum.Value = error.KesinCozum ?? (object)DBNull.Value;
                 pCauses.Value = error.CommonCauses ?? (object)DBNull.Value;
                 pUrls.Value = error.RelatedKbUrls ?? (object)DBNull.Value;
                 pSev.Value = error.Severity;
@@ -240,6 +247,7 @@ public class DatabaseService
         public string? Description { get; set; }
         public string? CommonCauses { get; set; }
         public string? SolutionSteps { get; set; }
+        public string? KesinCozum { get; set; }
         public string? RelatedKbUrls { get; set; }
     }
 }

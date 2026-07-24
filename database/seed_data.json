@@ -7,7 +7,8 @@
     "description": "Bu hata, Windows bellek yöneticisinde kritik bir sorun tespit edildiğinde ortaya çıkar. Genellikle hatalı RAM, uyumsuz bellek modülleri veya bozuk sürücülerden kaynaklanır.",
     "common_causes": "• Arızalı veya uyumsuz RAM modülleri\n• BIOS'ta yanlış bellek zamanlamaları (timing)\n• Bozuk veya güncel olmayan sürücüler (özellikle anakart sürücüleri)\n• Virüs veya kötü amaçlı yazılım\n• Disk hataları (bozuk sektörler)",
     "solution_steps": "1. Bilgisayarı kapatın, RAM modüllerini çıkarıp silgiyle temizleyin ve tekrar takın\n2. Windows Bellek Tanılama Aracı'nı çalıştırın: Başlat > 'Windows Bellek Tanılama' yazın > 'Şimdi yeniden başlat' seçin\n3. Komut İstemi'ni yönetici olarak açın ve 'sfc /scannow' yazıp Enter'a basın\n4. Sürücülerinizi güncelleyin: Özellikle anakart, ekran kartı ve chipset sürücüleri\n5. BIOS'a girip bellek ayarlarını 'Auto' veya 'Default' yapın\n6. Son çare: Her bir RAM modülünü tek tek deneyerek hangisinin arızalı olduğunu bulun",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x1a--memory-management"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x1a--memory-management",
+    "kesin_cozum": "En kesin çözüm: RAM modüllerini söküp silgiyle temas noktalarını temizle, ardından Windows Bellek Tanılama Aracı'nı çalıştır. Hata devam ediyorsa her RAM'i tek tek dene."
   },
   {
     "error_code": "0x00000050",
@@ -17,7 +18,8 @@
     "description": "Windows, sayfalanamayan bir bellek alanına erişmeye çalıştığında ancak bulamadığında bu hata oluşur. Genellikle hatalı RAM, bozuk sürücü veya hasarlı sistem dosyalarından kaynaklanır.",
     "common_causes": "• Arızalı RAM bellek\n• Bozuk veya güncel olmayan sürücüler (özellikle antivirüs, sanallaştırma)\n• Hasarlı sistem dosyaları\n• Disk hataları\n• Hatalı BIOS/UEFI ayarları",
     "solution_steps": "1. Bilgisayarı tamamen kapatın, fişini çekin, RAM'leri çıkarıp temizleyin ve yeniden takın\n2. Güvenli Mod'da başlatın: Bilgisayar açılırken F8'e basın > Güvenli Mod seçin\n3. Komut İstemi'ni yönetici olarak açın: 'sfc /scannow' komutunu çalıştırın\n4. DISM aracını çalıştırın: 'DISM /Online /Cleanup-Image /RestoreHealth'\n5. Son yüklediğiniz program veya sürücüyü kaldırın\n6. Windows Bellek Tanılama Aracı'nı çalıştırın",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x50--page-fault-in-nonpaged-area"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x50--page-fault-in-nonpaged-area",
+    "kesin_cozum": "En kesin çözüm: Güvenli Mod'da sfc /scannow ve DISM /Online /Cleanup-Image /RestoreHealth çalıştır. Düzelmezse RAM'leri temizle ve belleği test et."
   },
   {
     "error_code": "0x0000007B",
@@ -27,7 +29,8 @@
     "description": "Windows, sistem dosyalarının bulunduğu diske erişemediğinde bu hata oluşur. Bilgisayar açılırken hemen mavi ekran verir. Genellikle disk sürücüsü sorunu, yanlış BIOS ayarları veya bozuk sistem dosyalarından kaynaklanır.",
     "common_causes": "• BIOS'ta yanlış disk modu (IDE/ACHI/RAID)\n• Bozuk veya eksik disk sürücüleri\n• Hasarlı Master Boot Record (MBR) veya GPT\n• Disk bağlantı kablosunda sorun\n• Windows güncellemesi sonrası uyumsuzluk",
     "solution_steps": "1. BIOS'a girin (F2/DEL tuşu) > SATA Mode'u 'AHCI' veya 'IDE' arasında değiştirin\n2. Windows kurulum USB'si ile açın > 'Bilgisayarınızı onarın' > 'Sorun Gider' > 'Gelişmiş Seçenekler' > 'Komut İstemi'\n3. Komut İstemi'nde sırayla şunları yazın:\n   - bootrec /fixmbr\n   - bootrec /fixboot\n   - bootrec /scanos\n   - bootrec /rebuildbcd\n4. Disk kablolarını kontrol edin, varsa başka bir SATA portu deneyin\n5. BIOS pilini çıkarıp 5 dakika bekleyin (sıfırlama)",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x7b--inaccessible-boot-device"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x7b--inaccessible-boot-device",
+    "kesin_cozum": "En kesin çözüm: BIOS'a gir, SATA Mode'u AHCI'den IDE'ye (veya tersini) dene. Windows USB ile bootrec /fixboot ve bootrec /rebuildbcd çalıştır."
   },
   {
     "error_code": "0x0000007E",
@@ -37,7 +40,8 @@
     "description": "Bir sistem thread'i bir hata ile karşılaştı ve bu hata işlenemedi. Genellikle bozuk veya uyumsuz bir sürücü, eksik sistem dosyası veya donanım sorunundan kaynaklanır.",
     "common_causes": "• Bozuk veya uyumsuz sürücüler (ekran kartı, ses, ağ)\n• Hasarlı sistem dosyaları\n• Arızalı RAM\n• Disk hataları\n• Virüs enfeksiyonu",
     "solution_steps": "1. Güvenli Mod'da başlatın ve son yüklediğiniz sürücüyü kaldırın\n2. Mavi ekranda yazan dosya adını not edin (örn: nvlddmkm.sys ekran kartı sürücüsüdür)\n3. İlgili sürücüyü üreticinin sitesinden güncelleyin\n4. Komut İstemi'ni yönetici olarak açın: 'sfc /scannow'\n5. DISM aracını çalıştırın: 'DISM /Online /Cleanup-Image /RestoreHealth'\n6. Windows Bellek Tanılama Aracı'nı çalıştırın",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x7e--system-thread-exception-not-handled"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x7e--system-thread-exception-not-handled",
+    "kesin_cozum": "En kesin çözüm: Mavi ekranda yazan .sys dosyasını tespit et, o sürücüyü güncelle veya kaldır. En sık nvlddmkm.sys (NVIDIA) veya atikmpag.sys (AMD) görülür."
   },
   {
     "error_code": "0x0000008E",
@@ -47,7 +51,8 @@
     "description": "Çekirdek modunda bir program hata ile karşılaştı ve Windows bu hatayı yakalayamadı. Genellikle hatalı bir sürücü veya donanım sorunundan kaynaklanır.",
     "common_causes": "• Bozuk veya güncel olmayan sürücüler\n• Arızalı RAM\n• Hasarlı sistem dosyaları\n• Uyumsuz yazılımlar\n• Aşırı ısınma",
     "solution_steps": "1. Güvenli Mod'da başlatın\n2. Son yüklediğiniz yazılım veya sürücüyü kaldırın\n3. 'sfc /scannow' komutunu çalıştırın\n4. Sürücülerinizi güncelleyin (özellikle ekran kartı)\n5. Bilgisayarınızın tozunu temizleyin ve soğutmayı kontrol edin\n6. Windows Bellek Tanılama Aracı'nı çalıştırın",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x8e--kernel-mode-exception-not-handled"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x8e--kernel-mode-exception-not-handled",
+    "kesin_cozum": "En kesin çözüm: Güvenli Mod'da sfc /scannow çalıştır ve ekran kartı sürücüsünü DDU ile temizleyip yeniden yükle."
   },
   {
     "error_code": "0x0000009F",
@@ -57,7 +62,8 @@
     "description": "Bir sürücü, güç durumu değişikliğini (uyku/uyanma/kapatma) belirtilen sürede tamamlayamadı. Genellikle bilgisayar uyku modundan uyanırken veya kapanırken oluşur.",
     "common_causes": "• Güç yönetimiyle uyumsuz sürücüler\n• Eski ekran kartı, ağ veya Wi-Fi sürücüleri\n• Hatalı BIOS güç ayarları\n• Çevre birimleri (USB aygıtları)\n• Windows Hızlı Başlangıç özelliği",
     "solution_steps": "1. Denetim Masası > Güç Seçenekleri > 'Hızlı Başlangıcı aç'ı kapatın\n2. Tüm sürücülerinizi güncelleyin (özellikle chipset ve ekran kartı)\n3. Aygıt Yöneticisi'nde her aygıtın 'Güç Yönetimi' sekmesinden 'Bilgisayarın bu aygıtı kapatmasına izin ver' seçeneğini kapatın\n4. BIOS'ta güç yönetimi ayarlarını varsayılana sıfırlayın\n5. USB aygıtlarını tek tek çıkarıp test edin",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x9f--driver-power-state-failure"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x9f--driver-power-state-failure",
+    "kesin_cozum": "En kesin çözüm: Denetim Masası > Güç Seçenekleri'nden 'Hızlı Başlangıcı aç' seçeneğini kapat. Chipset ve ağ sürücülerini güncelle."
   },
   {
     "error_code": "0x000000D1",
@@ -67,7 +73,8 @@
     "description": "Bir sürücü, çok yüksek bir IRQL seviyesinde bir bellek adresine erişmeye çalıştı. Neredeyse her zaman hatalı bir sürücüden kaynaklanır.",
     "common_causes": "• Bozuk veya güncel olmayan sürücüler (en yaygın neden)\n• Antivirüs yazılımları\n• Ağ sürücüleri\n• Sanallaştırma yazılımları (VMware, VirtualBox)\n• Arızalı RAM",
     "solution_steps": "1. Mavi ekranda yazan dosya adını not edin (sorunlu sürücüyü gösterir)\n2. Güvenli Mod'da başlatın\n3. Son yüklediğiniz sürücü veya yazılımı kaldırın\n4. Sürücülerinizi üretici sitesinden güncelleyin\n5. Antivirüsünüzü geçici olarak devre dışı bırakın\n6. 'sfc /scannow' çalıştırın\n7. Windows Bellek Tanılama Aracı'nı çalıştırın",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0xd1--driver-irql-not-less-or-equal"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0xd1--driver-irql-not-less-or-equal",
+    "kesin_cozum": "En kesin çözüm: Mavi ekranda yazan sürücü adını bul (ör: rt640x64.sys = Realtek). O sürücüyü üretici sitesinden güncelle veya Güvenli Mod'da kaldır."
   },
   {
     "error_code": "0x000000EA",
@@ -77,7 +84,8 @@
     "description": "Bir sürücü içindeki thread sonsuz döngüye girdi. En sık ekran kartı sürücülerinde görülür. Genellikle oyun oynarken veya grafik yoğun uygulamalarda ortaya çıkar.",
     "common_causes": "• Bozuk veya güncel olmayan ekran kartı sürücüsü\n• Aşırı ısınma (GPU)\n• Hatalı ekran kartı overclock'u\n• Uyumsuz DirectX sürümü\n• Donanımsal GPU arızası",
     "solution_steps": "1. Güvenli Mod'da başlatın\n2. Ekran kartı sürücüsünü DDU (Display Driver Uninstaller) ile tamamen kaldırın\n3. Ekran kartı üreticinin sitesinden en son sürücüyü yükleyin\n4. Bilgisayar kasasını açıp tozunu temizleyin, fanları kontrol edin\n5. BIOS'tan overclock ayarlarını varsayılana döndürün\n6. Oyun/gölgelendirme ayarlarını düşürün",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0xea--thread-stuck-in-device-driver"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0xea--thread-stuck-in-device-driver",
+    "kesin_cozum": "En kesin çözüm: Ekran kartı sürücüsünü DDU ile komple kaldır, en son sürümü yükle. GPU sıcaklığını kontrol et, overclock varsa kapat."
   },
   {
     "error_code": "0x00000124",
@@ -87,7 +95,8 @@
     "description": "Windows Donanım Hata Mimarisi (WHEA) düzeltilemeyen bir donanım hatası tespit etti. Neredeyse her zaman fiziksel bir donanım sorunudur.",
     "common_causes": "• İşlemci arızası veya aşırı ısınma\n• Arızalı RAM bellek\n• Anakart sorunu (kapasitör/kirli temas)\n• Güç kaynağı yetersizliği veya arızası\n• Overclock kaynaklı kararsızlık\n• BIOS sürüm uyumsuzluğu",
     "solution_steps": "1. BIOS'a girin ve overclock/otomatik hız aşırtma ayarlarını kapatın\n2. BIOS'u varsayılana sıfırlayın (Load Optimized Defaults)\n3. Bilgisayarı kapatın, tüm kabloları ve donanımları söküp temizleyin, yeniden takın\n4. İşlemci termal macununu yenileyin ve soğutucuyu kontrol edin\n5. RAM'leri tek tek deneyerek hangisinin arızalı olduğunu bulun\n6. BIOS güncellemesi yapın (varsa son sürüme)\n7. Windows Bellek Tanılama ve disk kontrolü yapın",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x124---whea-uncorrectable-error"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x124---whea-uncorrectable-error",
+    "kesin_cozum": "En kesin çözüm: BIOS'a gir, overclock/otomatik hız aşırtmayı kapat. İşlemci termal macununu yenile ve soğutucuyu kontrol et. RAM'leri tek tek dene."
   },
   {
     "error_code": "0x00000133",
@@ -97,7 +106,8 @@
     "description": "Bir DPC rutini çok uzun süre çalıştığı için watchdog zaman aşımına uğradı. Genellikle depolama sürücüleri, SSD firmware sorunları veya uyumsuz sürücülerden kaynaklanır.",
     "common_causes": "• Bozuk veya güncel olmayan depolama sürücüleri (NVMe, SATA)\n• SSD firmware sorunları\n• Uyumsuz Windows güncellemesi\n• Antivirüs yazılımı çakışması\n• Hasarlı sistem dosyaları",
     "solution_steps": "1. Depolama sürücülerinizi güncelleyin (NVMe, SATA AHCI)\n2. SSD üreticinizin sitesinden firmware güncellemesini kontrol edin\n3. Komut İstemi yönetici: 'sfc /scannow'\n4. DISM: 'DISM /Online /Cleanup-Image /RestoreHealth'\n5. Son Windows güncellemesini kaldırın\n6. Güvenli Mod'da antivirüsünüzü geçici devre dışı bırakın",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x133---dpc-watchdog-violation"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x133---dpc-watchdog-violation",
+    "kesin_cozum": "En kesin çözüm: Depolama sürücülerini (NVMe/SATA AHCI) güncelle. SSD kullanıyorsan firmware güncellemesini kontrol et. sfc /scannow çalıştır."
   },
   {
     "error_code": "0x00000139",
@@ -107,7 +117,8 @@
     "description": "Windows çekirdeği bir güvenlik kontrolünde başarısız oldu. Bu genellikle bir sürücünün veya programın bellek yapısını bozmasından kaynaklanır.",
     "common_causes": "• Bozuk sürücüler (özellikle dosya sistemi filtre sürücüleri)\n• Antivirüs yazılımı çakışması\n• Kötü amaçlı yazılım\n• Hasarlı sistem dosyaları\n• Arızalı RAM",
     "solution_steps": "1. Antivirüsünüzü geçici olarak devre dışı bırakın\n2. Tam virüs taraması yapın (Windows Defender Çevrimdışı Tarama)\n3. 'sfc /scannow' çalıştırın\n4. 'DISM /Online /Cleanup-Image /RestoreHealth'\n5. Son yüklenen yazılım veya sürücüyü kaldırın\n6. Windows Bellek Tanılama Aracı'nı çalıştırın",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x139---kernel-security-check-failure"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x139---kernel-security-check-failure",
+    "kesin_cozum": "En kesin çözüm: Antivirüsü geçici devre dışı bırak. sfc /scannow ve DISM çalıştır. Windows Defender Çevrimdışı Tarama yap."
   },
   {
     "error_code": "0x0000001E",
@@ -117,7 +128,8 @@
     "description": "Windows çekirdek modunda bir program hata ile karşılaştı ve hata işleyici bulunamadı. Genellikle bozuk sürücü veya donanım sorunundan kaynaklanır.",
     "common_causes": "• Bozuk veya uyumsuz sürücüler\n• Arızalı RAM\n• Hasarlı sistem dosyaları\n• Disk hataları\n• Uyumsuz yazılımlar",
     "solution_steps": "1. Güvenli Mod'da başlatın\n2. Son yüklenen sürücü veya yazılımı kaldırın\n3. 'sfc /scannow' çalıştırın\n4. Tüm sürücüleri güncelleyin\n5. Windows Bellek Tanılama Aracı'nı çalıştırın\n6. Disk kontrolü yapın: 'chkdsk C: /f'",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x1e---kmode-exception-not-handled"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x1e---kmode-exception-not-handled",
+    "kesin_cozum": "En kesin çözüm: Güvenli Mod'da sfc /scannow çalıştır ve son yüklenen sürücüyü kaldır. Bellek testi yap."
   },
   {
     "error_code": "0x0000003B",
@@ -127,7 +139,8 @@
     "description": "Bir sistem servisi beklenmeyen bir hata ile karşılaştı. En sık ekran kartı sürücüleri ve oyunlarda görülür. Windows 10/11'de en yaygın mavi ekran hatalarından biridir.",
     "common_causes": "• Bozuk ekran kartı sürücüsü\n• Bellek sorunları\n• Hasarlı sistem dosyaları\n• Uyumsuz yazılımlar\n• Virüs veya kötü amaçlı yazılım",
     "solution_steps": "1. Ekran kartı sürücünüzü DDU ile kaldırıp en son sürümü yükleyin\n2. 'sfc /scannow' ve 'DISM /Online /Cleanup-Image /RestoreHealth' çalıştırın\n3. Windows Bellek Tanılama Aracı'nı çalıştırın\n4. Son yüklediğiniz yazılımı kaldırın\n5. Sürücülerinizi güncelleyin\n6. Windows'u sıfırlayın (son çare)",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x3b---system-service-exception"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x3b---system-service-exception",
+    "kesin_cozum": "En kesin çözüm: Ekran kartı sürücüsünü DDU ile temiz yükle. sfc /scannow ve Windows Bellek Tanılama çalıştır."
   },
   {
     "error_code": "0xC000021A",
@@ -137,7 +150,8 @@
     "description": "Windows oturum açma işlemi (Winlogon) kritik bir hata ile karşılaştı ve sistem kapanmak zorunda kaldı.",
     "common_causes": "• Bozuk Windows güncellemesi\n• Hasarlı sistem dosyaları (özellikle winlogon.exe)\n• Antivirüs yazılımı çakışması\n• Disk hataları\n• Kayıt defteri (Registry) bozulması",
     "solution_steps": "1. Windows kurulum USB'si ile açın > 'Bilgisayarınızı onarın' > 'Sorun Gider'\n2. 'sfc /scannow /offbootdir=C:\\ /offwindir=C:\\Windows' çalıştırın\n3. Son yüklenen Windows güncellemesini kaldırın\n4. Sistem Geri Yükleme yapın\n5. DISM aracını kullanın: 'DISM /Image:C:\\ /Cleanup-Image /RestoreHealth'\n6. Son çare: Windows'u sıfırlayın veya yeniden yükleyin",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0xc000021a---winlogon-fatal-error"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0xc000021a---winlogon-fatal-error",
+    "kesin_cozum": "En kesin çözüm: Windows USB ile aç, 'Bilgisayarınızı onarın' > 'Sorun Gider' > 'Komut İstemi'nde sfc /scannow /offbootdir=C:\\ /offwindir=C:\\Windows çalıştır."
   },
   {
     "error_code": "0x000000F4",
@@ -147,7 +161,8 @@
     "description": "Windows için hayati önem taşıyan bir işlem veya thread beklenmedik şekilde sonlandı.",
     "common_causes": "• Bozuk Windows güncellemesi\n• Hasarlı sistem dosyaları\n• Disk hataları\n• Antivirüs çakışması\n• Arızalı RAM veya depolama",
     "solution_steps": "1. Bilgisayarı kapatıp açın (bazen geçici çözüm)\n2. Son yüklenen Windows güncellemesini kaldırın\n3. 'sfc /scannow' çalıştırın\n4. Disk kontrolü: 'chkdsk C: /f' (Yönetici Komut İstemi)\n5. Antivirüsünüzü kaldırıp başka bir tane deneyin\n6. Windows Bellek Tanılama Aracı'nı çalıştırın",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0xf4---critical-object-termination"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0xf4---critical-object-termination",
+    "kesin_cozum": "En kesin çözüm: Son Windows güncellemesini kaldır. sfc /scannow ve chkdsk C: /f çalıştır. Antivirüsü geçici kaldır."
   },
   {
     "error_code": "0x000000C4",
@@ -157,7 +172,8 @@
     "description": "Windows Sürücü Doğrulayıcısı (Driver Verifier) bir sürücünün hatalı davrandığını tespit etti.",
     "common_causes": "• Driver Verifier'ın açık kalması (test amaçlı)\n• Hatalı üçüncü parti sürücü\n• Uyumsuz donanım sürücüleri\n• Windows Insider sürümünde kararsızlık",
     "solution_steps": "1. Driver Verifier'ı kapatın: Komut İstemi yönetici > 'verifier /reset' yazın, yeniden başlatın\n2. Sorunlu sürücüyü belirlemek için: 'verifier' yazın > 'Var olan ayarları sil' seçin\n3. Güvenli Mod'da başlatıp Driver Verifier'ı devre dışı bırakın\n4. Son yüklenen sürücüleri kaldırın\n5. Sistem Geri Yükleme yapın",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0xc4---driver-verifier-detected-violation"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0xc4---driver-verifier-detected-violation",
+    "kesin_cozum": "En kesin çözüm: Yönetici Komut İstemi'nde 'verifier /reset' yazıp Enter'a bas, yeniden başlat. Driver Verifier kapanacaktır."
   },
   {
     "error_code": "0x000000BE",
@@ -167,7 +183,8 @@
     "description": "Bir sürücü, salt okunur olarak işaretlenmiş bir bellek bölgesine yazmaya çalıştı.",
     "common_causes": "• Bozuk veya uyumsuz sürücü\n• Hatalı yazılım (özellikle sistem araçları)\n• Antivirüs çakışması\n• Hasarlı sistem dosyaları",
     "solution_steps": "1. Güvenli Mod'da başlatın\n2. Son yüklenen yazılım veya sürücüyü kaldırın\n3. 'sfc /scannow' çalıştırın\n4. Sürücülerinizi güncelleyin\n5. Antivirüsünüzü geçici olarak devre dışı bırakın",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0xbe---attempted-write-to-readonly-memory"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0xbe---attempted-write-to-readonly-memory",
+    "kesin_cozum": "En kesin çözüm: Güvenli Mod'da son yüklenen yazılımı kaldır. sfc /scannow çalıştır. Antivirüsü devre dışı bırak."
   },
   {
     "error_code": "0x0000004E",
@@ -177,7 +194,8 @@
     "description": "Windows'un bellek yönetimi için kullandığı PFN (Page Frame Number) veritabanı bozuldu.",
     "common_causes": "• Arızalı RAM bellek\n• Bozuk sürücüler\n• Disk hataları (bozuk sektörler)\n• Hasarlı sistem dosyaları\n• Uyumsuz BIOS ayarları",
     "solution_steps": "1. Windows Bellek Tanılama Aracı'nı çalıştırın\n2. 'sfc /scannow' çalıştırın\n3. Disk kontrolü: 'chkdsk C: /f'\n4. RAM'leri çıkarıp temizleyin ve tek tek test edin\n5. BIOS ayarlarını varsayılana sıfırlayın",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x4e---pfn-list-corrupt"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x4e---pfn-list-corrupt",
+    "kesin_cozum": "En kesin çözüm: Windows Bellek Tanılama Aracı'nı çalıştır. chkdsk C: /f ile disk kontrolü yap. RAM'leri tek tek test et."
   },
   {
     "error_code": "0x00000023",
@@ -187,7 +205,8 @@
     "description": "FAT dosya sisteminde bir sorun oluştu. FAT32 veya exFAT biçimli disklerde görülür.",
     "common_causes": "• Disk hataları veya bozuk sektörler\n• USB bellek veya SD kart arızası\n• Dosya sistemi bozulması\n• Sürücü sorunları\n• Ani güç kesintisi",
     "solution_steps": "1. 'chkdsk X: /f' (X: sorunlu sürücü harfi) çalıştırın\n2. 'sfc /scannow' çalıştırın\n3. Sorunlu diski başka bir bilgisayarda test edin\n4. Verileri yedekleyip diski biçimlendirin (son çare)\n5. USB bellek kullanıyorsanız, başka bir USB portu deneyin",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x23---fat-file-system"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x23---fat-file-system",
+    "kesin_cozum": "En kesin çözüm: chkdsk X: /f (X sorunlu sürücü) çalıştır. Sorunlu diski biçimlendir veya başka bilgisayarda dene."
   },
   {
     "error_code": "0x00000077",
@@ -197,7 +216,8 @@
     "description": "Windows, çekirdek yığınının bir sayfasını diskten belleğe yükleyemedi.",
     "common_causes": "• Disk hataları (bozuk sektörler)\n• Arızalı RAM bellek\n• Disk bağlantı kablosu sorunu\n• Bozuk sürücüler\n• Yetersiz disk alanı\n• Virüs enfeksiyonu",
     "solution_steps": "1. 'chkdsk C: /f /r' çalıştırın (uzun sürebilir)\n2. Windows Bellek Tanılama Aracı'nı çalıştırın\n3. Disk kablolarını kontrol edin, farklı bir SATA portu deneyin\n4. 'sfc /scannow' çalıştırın\n5. Sabit diskinizin sağlık durumunu kontrol edin (CrystalDiskInfo benzeri araçla)\n6. Yeterli boş disk alanı olduğundan emin olun",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x77---kernel-stack-inpage-error"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x77---kernel-stack-inpage-error",
+    "kesin_cozum": "En kesin çözüm: chkdsk C: /f /r çalıştır (yeniden başlatma gerektirir). Disk kablolarını kontrol et ve SATA portunu değiştir."
   },
   {
     "error_code": "0x0000000A",
@@ -207,7 +227,8 @@
     "description": "Bir sürücü veya sistem işlemi, geçersiz bir bellek adresine çok yüksek bir kesme seviyesinde (IRQL) erişmeye çalıştı. Windows 10/11'de en sık karşılaşılan mavi ekran hatalarından biridir.",
     "common_causes": "• Bozuk veya uyumsuz sürücüler (en yaygın neden)\n• Arızalı RAM bellek\n• Hasarlı sistem dosyaları\n• Uyumsuz yazılım veya güvenlik programları\n• Hatalı BIOS ayarları",
     "solution_steps": "1. Mavi ekranda yazan sürücü adını not edin (sorunlu dosyayı gösterir)\n2. Güvenli Mod'da başlatın ve son yüklenen sürücüyü kaldırın\n3. 'sfc /scannow' ve 'DISM /Online /Cleanup-Image /RestoreHealth' çalıştırın\n4. Tüm sürücülerinizi güncelleyin (özellikle ağ ve ekran kartı)\n5. Antivirüsünüzü geçici olarak devre dışı bırakın\n6. Windows Bellek Tanılama Aracı'nı çalıştırın",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0xa--irql-not-less-or-equal"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0xa--irql-not-less-or-equal",
+    "kesin_cozum": "En kesin çözüm: Mavi ekranda yazan sürücü adını tespit et (ör: e1i65x64.sys = Intel ağ sürücüsü). O sürücüyü güncelle veya kaldır. En yaygın suçlular: ağ, ses ve ekran kartı sürücüleri."
   },
   {
     "error_code": "0x00000024",
@@ -217,7 +238,8 @@
     "description": "NTFS dosya sisteminde kritik bir hata oluştu. Genellikle disk bozulması, bozuk sektörler veya sürücü sorunlarından kaynaklanır.",
     "common_causes": "• Disk hataları veya bozuk sektörler\n• Bozuk disk sürücüleri (SATA/NVMe)\n• Hasarlı sistem dosyaları\n• Ani güç kesintisi sonucu dosya sistemi bozulması\n• SSD firmware sorunları",
     "solution_steps": "1. Yönetici Komut İstemi'ni açın: 'chkdsk C: /f /r' çalıştırın (yeniden başlatma gerektirir)\n2. 'sfc /scannow' çalıştırın\n3. 'DISM /Online /Cleanup-Image /RestoreHealth' çalıştırın\n4. Disk sürücülerinizi güncelleyin (NVMe, SATA AHCI)\n5. SSD kullanıyorsanız üreticinin firmware aracını çalıştırın\n6. Disk sağlığını kontrol edin (CrystalDiskInfo ile)",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x24--ntfs-file-system"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x24--ntfs-file-system",
+    "kesin_cozum": "En kesin çözüm: Yönetici Komut İstemi'nde 'chkdsk C: /f /r' çalıştır (bilgisayar yeniden başlar). Ardından 'sfc /scannow' ve 'DISM /Online /Cleanup-Image /RestoreHealth' çalıştır."
   },
   {
     "error_code": "0x00000019",
@@ -227,7 +249,8 @@
     "description": "Windows bellek havuzu (pool) başlığı bozuldu. Genellikle hatalı bir sürücünün bellek yönetimini bozması sonucu oluşur.",
     "common_causes": "• Bozuk veya güncel olmayan sürücüler\n• Arızalı RAM bellek\n• Hasarlı sistem dosyaları\n• Antivirüs yazılımı çakışması\n• Uyumsuz yazılımlar",
     "solution_steps": "1. Güvenli Mod'da başlatın\n2. Son yüklenen sürücü veya yazılımı kaldırın\n3. 'sfc /scannow' çalıştırın\n4. Windows Bellek Tanılama Aracı'nı çalıştırın\n5. Antivirüsünüzü geçici olarak devre dışı bırakın\n6. Sürücülerinizi güncelleyin",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x19--bad-pool-header"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x19--bad-pool-header",
+    "kesin_cozum": "En kesin çözüm: Güvenli Mod'da son yüklenen sürücüyü kaldır. Windows Bellek Tanılama Aracı'nı çalıştır. Antivirüsü geçici devre dışı bırak."
   },
   {
     "error_code": "0x000000EF",
@@ -237,7 +260,8 @@
     "description": "Windows için kritik bir işlem beklenmedik şekilde sonlandı. Bu hata genellikle sistem dosyalarının bozulması, disk hatası veya kötü amaçlı yazılımdan kaynaklanır.",
     "common_causes": "• Hasarlı sistem dosyaları\n• Disk hataları veya bozuk sektörler\n• Bozuk Windows güncellemesi\n• Kötü amaçlı yazılım\n• Arızalı depolama birimi (SSD/HDD)",
     "solution_steps": "1. Bilgisayarı yeniden başlatın (geçici çözüm olabilir)\n2. Güvenli Mod'da başlatın ve 'sfc /scannow' çalıştırın\n3. 'DISM /Online /Cleanup-Image /RestoreHealth' çalıştırın\n4. Disk kontrolü: 'chkdsk C: /f'\n5. Windows Defender ile tam tarama yapın\n6. Son yüklenen güncellemeyi kaldırın",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0xef--critical-process-died"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0xef--critical-process-died",
+    "kesin_cozum": "En kesin çözüm: sfc /scannow ve DISM /Online /Cleanup-Image /RestoreHealth çalıştır. chkdsk C: /f ile disk kontrolü yap. Windows Defender ile tam tarama yap."
   },
   {
     "error_code": "0x00000116",
@@ -247,7 +271,8 @@
     "description": "Ekran kartı sürücüsü yanıt vermeyi kesti (TDR - Timeout, Detection and Recovery). Genellikle oyun oynarken veya grafik yoğun uygulamalarda görülür.",
     "common_causes": "• Bozuk veya güncel olmayan ekran kartı sürücüsü\n• Aşırı ısınma (GPU)\n• Ekran kartı overclock'u\n• Yetersiz güç kaynağı\n• Donanımsal GPU arızası",
     "solution_steps": "1. Ekran kartı sürücüsünü DDU ile tamamen kaldırıp en son sürümü yükleyin\n2. GPU sıcaklığını kontrol edin (MSI Afterburner ile)\n3. Overclock varsa sıfırlayın\n4. Oyun ayarlarını düşürün (özellikle grafik kalitesi)\n5. Güç kaynağınızın yeterli olduğundan emin olun\n6. DirectX ve Visual C++ yeniden dağıtılabilir paketlerini güncelleyin",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x116--video-tdr-failure"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x116--video-tdr-failure",
+    "kesin_cozum": "En kesin çözüm: Ekran kartı sürücüsünü DDU ile komple kaldır, en son Game Ready sürücüyü yükle. GPU sıcaklığını kontrol et, kasayı temizle."
   },
   {
     "error_code": "0x0000007F",
@@ -257,7 +282,8 @@
     "description": "Windows çekirdeği beklenmeyen bir tuzak (trap) hatası yakaladı. Genellikle donanımsal bir sorundan kaynaklanır — hatalı RAM, overclock veya anakart arızası.",
     "common_causes": "• Arızalı RAM veya işlemci\n• Aşırı ısınma\n• Hatalı overclock ayarları\n• Bozuk anakart\n• Uyumsuz BIOS sürümü",
     "solution_steps": "1. BIOS'a girin ve overclock ayarlarını varsayılana döndürün\n2. İşlemci ve GPU sıcaklıklarını kontrol edin\n3. Windows Bellek Tanılama Aracı'nı çalıştırın\n4. BIOS'u güncelleyin (varsa son sürüm)\n5. RAM'leri tek tek test edin\n6. Soğutma sistemini kontrol edin ve termal macunu yenileyin",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x7f--unexpected-kernel-mode-trap"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x7f--unexpected-kernel-mode-trap",
+    "kesin_cozum": "En kesin çözüm: BIOS'a gir, overclock'u kapat. BIOS'u varsayılana sıfırla. İşlemci soğutucuyu kontrol et, termal macunu yenile. RAM'leri test et."
   },
   {
     "error_code": "0x000000C2",
@@ -267,7 +293,8 @@
     "description": "Bir çekirdek modu işlemi veya sürücü, bellek havuzuna geçersiz bir işlem yapmaya çalıştı. Hatalı bir sürücü veya yazılımın belleği yanlış yönetmesinden kaynaklanır.",
     "common_causes": "• Bozuk veya uyumsuz sürücüler\n• Hatalı yazılım (özellikle sistem yardımcı programları)\n• Arızalı RAM\n• Hasarlı sistem dosyaları",
     "solution_steps": "1. Güvenli Mod'da başlatın\n2. Son yüklenen sürücü veya yazılımı kaldırın\n3. 'sfc /scannow' çalıştırın\n4. Windows Bellek Tanılama Aracı'nı çalıştırın\n5. Sürücülerinizi güncelleyin",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0xc2--bad-pool-caller"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0xc2--bad-pool-caller",
+    "kesin_cozum": "En kesin çözüm: Güvenli Mod'da son yüklenen sürücüyü kaldır. sfc /scannow çalıştır. Windows Bellek Tanılama Aracı'nı çalıştır."
   },
   {
     "error_code": "0x00000051",
@@ -277,7 +304,8 @@
     "description": "Windows Kayıt Defteri (Registry) okunurken veya yazılırken kritik bir hata oluştu. Sistem dosyası bozulması veya disk hatası işareti olabilir.",
     "common_causes": "• Hasarlı kayıt defteri dosyaları\n• Disk hataları veya bozuk sektörler\n• Bozuk Windows güncellemesi\n• Yetersiz disk alanı\n• Antivirüs yazılımı çakışması",
     "solution_steps": "1. Son Bilinen İyi Yapılandırma ile başlatmayı deneyin\n2. 'sfc /scannow' ve 'DISM /Online /Cleanup-Image /RestoreHealth' çalıştırın\n3. Sistem Geri Yükleme yapın\n4. 'chkdsk C: /f' ile disk kontrolü yapın\n5. Windows kurulum medyası ile onarım yapın\n6. Son çare: Windows'u sıfırlayın",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x51--registry-error"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x51--registry-error",
+    "kesin_cozum": "En kesin çözüm: Windows USB ile aç > 'Bilgisayarınızı onarın' > sfc /scannow ve DISM çalıştır. Sistem Geri Yükleme yap. Son çare: Windows'u sıfırla."
   },
   {
     "error_code": "0x00000001",
@@ -287,7 +315,8 @@
     "description": "Bir sürücü veya dosya sistemi, APC (Asynchronous Procedure Call) çağrılarını devre dışı bırakma ve yeniden etkinleştirme sırasında hata yaptı.",
     "common_causes": "• Bozuk dosya sistemi sürücüleri\n• Hasarlı sistem dosyaları\n• Uyumsuz yazılım veya sürücü\n• Disk hataları",
     "solution_steps": "1. 'sfc /scannow' çalıştırın\n2. 'DISM /Online /Cleanup-Image /RestoreHealth' çalıştırın\n3. Disk kontrolü: 'chkdsk C: /f'\n4. Son yüklenen yazılım veya sürücüyü kaldırın\n5. Windows güncellemelerini kontrol edin",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x1--apc-index-mismatch"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x1--apc-index-mismatch",
+    "kesin_cozum": "En kesin çözüm: sfc /scannow ve DISM /Online /Cleanup-Image /RestoreHealth çalıştır. chkdsk C: /f ile disk kontrolü yap. Son yüklenen yazılımı kaldır."
   },
   {
     "error_code": "0x00000074",
@@ -297,7 +326,8 @@
     "description": "Windows sistem yapılandırma bilgileri bozuk veya hatalı. Kayıt defteri hasarı veya eksik sistem dosyalarından kaynaklanır.",
     "common_causes": "• Bozuk kayıt defteri (Registry) yapılandırması\n• Hasarlı SAM (Güvenlik Hesap Yöneticisi) dosyası\n• Bozuk Windows güncellemesi\n• Disk hataları\n• Yeni donanım sonrası yapılandırma çakışması",
     "solution_steps": "1. Güvenli Mod'da başlatmayı deneyin\n2. Son Bilinen İyi Yapılandırma ile başlatın\n3. Sistem Geri Yükleme yapın\n4. 'sfc /scannow' çalıştırın\n5. Kayıt defteri yedeğinden geri yükleyin\n6. Windows kurulum medyası ile onarım yapın",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x74--bad-system-config-info"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x74--bad-system-config-info",
+    "kesin_cozum": "En kesin çözüm: Son Bilinen İyi Yapılandırma ile başlat. Sistem Geri Yükleme yap. sfc /scannow çalıştır. Düzelmezse Windows onarım kurulumu yap."
   },
   {
     "error_code": "0x000000ED",
@@ -307,7 +337,8 @@
     "description": "Windows, sistem önyükleme birimini bağlayamadı (mount). Genellikle disk hataları, bozuk dosya sistemi veya uyumsuz depolama sürücülerinden kaynaklanır.",
     "common_causes": "• Disk hataları veya bozuk sektörler\n• Bozuk dosya sistemi\n• Uyumsuz veya bozuk disk sürücüleri\n• Disk bağlantı kablosu sorunları\n• BIOS'ta yanlış disk modu (IDE/ACHI)",
     "solution_steps": "1. BIOS'a girin, SATA Mode'u değiştirin (ACHI ↔ IDE)\n2. Windows kurulum USB'si ile açın > 'Bilgisayarınızı onarın' > 'Sorun Gider'\n3. Komut İstemi'nde 'chkdsk C: /f /r' çalıştırın\n4. 'bootrec /fixmbr' ve 'bootrec /fixboot' çalıştırın\n5. Disk kablolarını kontrol edin, farklı bir SATA portu deneyin\n6. Disk sağlığını kontrol edin",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0xed--unmountable-boot-volume"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0xed--unmountable-boot-volume",
+    "kesin_cozum": "En kesin çözüm: BIOS'ta SATA Mode'u değiştir (ACHI ↔ IDE). Windows USB ile chkdsk C: /f /r ve bootrec /fixboot çalıştır. Disk kablolarını kontrol et."
   },
   {
     "error_code": "0x0000009C",
@@ -317,7 +348,8 @@
     "description": "İşlemci, düzeltilemeyen bir donanım hatası bildirdi (Machine Check Exception). Genellikle işlemci, bellek veya anakart kaynaklı ciddi bir donanım sorunudur.",
     "common_causes": "• İşlemci arızası veya aşırı ısınma\n• Arızalı RAM bellek\n• Güç kaynağı sorunları\n• Anakart kapasitör arızası\n• Overclock kaynaklı kararsızlık",
     "solution_steps": "1. BIOS'a girin ve overclock ayarlarını varsayılana döndürün\n2. İşlemci sıcaklığını kontrol edin, termal macunu yenileyin\n3. RAM'leri tek tek test edin\n4. Güç kaynağını kontrol edin\n5. BIOS'u güncelleyin\n6. Donanım bileşenlerini söküp temizleyin ve yeniden takın",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x9c--machine-check-exception"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x9c--machine-check-exception",
+    "kesin_cozum": "En kesin çözüm: BIOS'a gir, overclock'u kapat. İşlemci soğutucuyu kontrol et, termal macunu yenile. BIOS'u güncelle. RAM'leri tek tek test et."
   },
   {
     "error_code": "0x00000044",
@@ -327,7 +359,8 @@
     "description": "Bir sürücü, aynı G/Ç istek paketini (IRP) birden fazla kez tamamlamaya çalıştı. Genellikle hatalı bir sürücüden kaynaklanır.",
     "common_causes": "• Bozuk veya uyumsuz sürücü\n• Hatalı donanım (özellikle depolama)\n• Hasarlı sistem dosyaları",
     "solution_steps": "1. Güvenli Mod'da başlatın\n2. Son yüklenen sürücüyü kaldırın\n3. 'sfc /scannow' çalıştırın\n4. Sürücülerinizi güncelleyin\n5. Disk kontrolü yapın",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x44--multiple-irp-complete-requests"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x44--multiple-irp-complete-requests",
+    "kesin_cozum": "En kesin çözüm: Güvenli Mod'da son yüklenen sürücüyü kaldır. sfc /scannow çalıştır. Sürücüleri güncelle."
   },
   {
     "error_code": "0x000000FE",
@@ -337,7 +370,8 @@
     "description": "USB sürücüsünde kritik bir hata oluştu. Genellikle uyumsuz veya bozuk bir USB aygıt sürücüsünden kaynaklanır.",
     "common_causes": "• Bozuk veya güncel olmayan USB sürücüleri\n• Uyumsuz USB aygıtları\n• USB denetleyici sürücüsü sorunu\n• Arızalı USB donanımı",
     "solution_steps": "1. Tüm USB aygıtlarını çıkarın ve tek tek takarak test edin\n2. Aygıt Yöneticisi'nde USB denetleyici sürücülerini güncelleyin\n3. Anakart chipset sürücülerini güncelleyin\n4. Güvenli Mod'da başlatıp sorunlu aygıtı belirleyin\n5. BIOS'ta USB ayarlarını varsayılana döndürün",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0xfe--bugcode-usb-driver"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0xfe--bugcode-usb-driver",
+    "kesin_cozum": "En kesin çözüm: Tüm USB aygıtlarını çıkar, tek tek takıp hangisinin sorunlu olduğunu bul. Anakart chipset sürücülerini güncelle. BIOS USB ayarlarını varsayılana döndür."
   },
   {
     "error_code": "0x00000141",
@@ -347,7 +381,8 @@
     "description": "Video işleme motoru zaman aşımına uğradı. Ekran kartı sürücüsünün bir işlemi belirtilen sürede tamamlayamamasından kaynaklanır.",
     "common_causes": "• Bozuk ekran kartı sürücüsü\n• GPU aşırı ısınması\n• Hatalı overclock\n• Yetersiz güç kaynağı\n• Donanımsal GPU arızası",
     "solution_steps": "1. Ekran kartı sürücüsünü DDU ile temizleyip yeniden yükleyin\n2. GPU sıcaklığını kontrol edin\n3. Overclock varsa sıfırlayın\n4. Oyun/gölgelendirme ayarlarını düşürün\n5. DirectX ve Visual C++ paketlerini güncelleyin",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x141--video-engine-timeout-detected"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x141--video-engine-timeout-detected",
+    "kesin_cozum": "En kesin çözüm: Ekran kartı sürücüsünü DDU ile temizle, en son sürümü yükle. GPU sıcaklığını kontrol et. Overclock varsa kapat. Oyun ayarlarını düşür."
   },
   {
     "error_code": "0x0000007C",
@@ -357,7 +392,8 @@
     "description": "Ağ sürücüsünde (NDIS) kritik bir hata oluştu. Genellikle ağ adaptörü sürücüsü veya Wi-Fi sürücüsü kaynaklıdır.",
     "common_causes": "• Bozuk ağ sürücüsü (Ethernet/Wi-Fi)\n• Uyumsuz ağ donanımı\n• Antivirüs veya güvenlik duvarı çakışması\n• Hasarlı ağ protokol yığını",
     "solution_steps": "1. Ağ sürücülerinizi güncelleyin (Ethernet ve Wi-Fi)\n2. Antivirüs/güvenlik duvarını geçici olarak devre dışı bırakın\n3. 'sfc /scannow' çalıştırın\n4. Ağ ayarlarını sıfırlayın: 'netsh winsock reset'\n5. Ağ adaptörünü Aygıt Yöneticisi'nden kaldırıp yeniden başlatın",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x7c--bugcode-ndis-driver"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x7c--bugcode-ndis-driver",
+    "kesin_cozum": "En kesin çözüm: Ağ sürücüsünü (Ethernet/Wi-Fi) güncelle. 'netsh winsock reset' çalıştır. Antivirüs/güvenlik duvarını geçici devre dışı bırak."
   },
   {
     "error_code": "0x00000144",
@@ -367,7 +403,8 @@
     "description": "USB 3.0 sürücüsü kritik bir hata ile karşılaştı. Genellikle USB 3.0 denetleyici sürücüsünün bozulması veya uyumsuz bir USB 3.0 aygıtından kaynaklanır.",
     "common_causes": "• Bozuk USB 3.0 denetleyici sürücüsü\n• Uyumsuz USB 3.0 aygıtı\n• Anakart chipset sürücüsü sorunu\n• Arızalı USB donanımı",
     "solution_steps": "1. USB 3.0 denetleyici sürücüsünü güncelleyin\n2. Anakart chipset sürücülerini güncelleyin\n3. USB aygıtlarını tek tek test edin\n4. BIOS'ta USB 3.0 ayarlarını kontrol edin\n5. Güvenli Mod'da sorunlu aygıtı belirleyin",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x144--bugcode-usb3-driver"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x144--bugcode-usb3-driver",
+    "kesin_cozum": "En kesin çözüm: Anakart chipset sürücülerini güncelle. USB 3.0 denetleyici sürücüsünü güncelle. USB aygıtlarını tek tek test et."
   },
   {
     "error_code": "0x00000101",
@@ -377,7 +414,8 @@
     "description": "Bir işlemci çekirdeği beklenen sürede yanıt vermedi. Genellikle işlemci overclock'u, güç yönetimi sorunları veya hatalı BIOS ayarlarından kaynaklanır.",
     "common_causes": "• Hatalı işlemci overclock ayarları\n• BIOS güç yönetimi sorunları\n• İşlemci aşırı ısınması\n• Uyumsuz BIOS sürümü\n• Arızalı işlemci",
     "solution_steps": "1. BIOS'a girin ve overclock ayarlarını varsayılana döndürün\n2. BIOS güç yönetimi ayarlarını 'Auto' veya 'Default' yapın\n3. BIOS'u güncelleyin\n4. İşlemci sıcaklığını kontrol edin, termal macunu yenileyin\n5. Windows Güç Seçenekleri'nde 'Yüksek Performans' modunu seçin\n6. Son çare: BIOS pilini çıkarıp sıfırlayın",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x101--clock-watchdog-timeout"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x101--clock-watchdog-timeout",
+    "kesin_cozum": "En kesin çözüm: BIOS'a gir, overclock'u kapat. BIOS güç yönetimi ayarlarını 'Auto' yap. İşlemci sıcaklığını kontrol et. Windows Güç Seçenekleri'nde 'Yüksek Performans' seç."
   },
   {
     "error_code": "0x000000D8",
@@ -387,7 +425,8 @@
     "description": "Bir sürücü, aşırı sayıda Sayfa Tablosu Girişi (PTE) kullandı ve sistem kaynaklarını tüketti.",
     "common_causes": "• Bellek sızıntısı olan sürücü\n• Uyumsuz ekran kartı sürücüsü\n• Sanallaştırma yazılımı sorunları\n• Hasarlı sistem dosyaları",
     "solution_steps": "1. Güvenli Mod'da başlatın\n2. Son yüklenen sürücü veya yazılımı kaldırın\n3. Ekran kartı sürücüsünü DDU ile temiz yükleyin\n4. 'sfc /scannow' çalıştırın\n5. Sanallaştırma yazılımını (VMware, VirtualBox) güncelleyin",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0xd8--driver-used-excessive-ptes"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0xd8--driver-used-excessive-ptes",
+    "kesin_cozum": "En kesin çözüm: Güvenli Mod'da son yüklenen sürücüyü kaldır. Ekran kartı sürücüsünü DDU ile temiz yükle. Sanallaştırma yazılımını güncelle."
   },
   {
     "error_code": "0x00000076",
@@ -397,7 +436,8 @@
     "description": "Bir süreç, kilitlediği bellek sayfalarını serbest bırakmadan sonlandı. Genellikle hatalı bir sürücüden kaynaklanır.",
     "common_causes": "• Bozuk veya uyumsuz sürücü\n• Hatalı yazılım\n• Bellek yönetimi sorunları\n• Hasarlı sistem dosyaları",
     "solution_steps": "1. Güvenli Mod'da başlatın\n2. Son yüklenen sürücü veya yazılımı kaldırın\n3. 'sfc /scannow' çalıştırın\n4. Sürücülerinizi güncelleyin\n5. Windows Bellek Tanılama Aracı'nı çalıştırın",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x76--process-has-locked-pages"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x76--process-has-locked-pages",
+    "kesin_cozum": "En kesin çözüm: Güvenli Mod'da son yüklenen sürücüyü kaldır. sfc /scannow çalıştır. Windows Bellek Tanılama Aracı'nı çalıştır."
   },
   {
     "error_code": "0xC0000221",
@@ -407,7 +447,8 @@
     "description": "Bir sistem dosyasının sağlama toplamı (checksum) beklenen değerle eşleşmedi. Dosya bozulmuş veya değiştirilmiş olabilir.",
     "common_causes": "• Bozuk veya değiştirilmiş sistem dosyası\n• Disk hataları\n• Bozuk Windows güncellemesi\n• Kötü amaçlı yazılım (dosya değişikliği)\n• Antivirüs yanlış pozitif dosya karantinası",
     "solution_steps": "1. 'sfc /scannow' çalıştırın\n2. 'DISM /Online /Cleanup-Image /RestoreHealth' çalıştırın\n3. Windows Defender ile tam tarama yapın\n4. Son yüklenen güncellemeyi kaldırın\n5. Sistem Geri Yükleme yapın\n6. Windows kurulum medyası ile onarım",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0xc0000221--status-image-checksum-mismatch"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0xc0000221--status-image-checksum-mismatch",
+    "kesin_cozum": "En kesin çözüm: sfc /scannow ve DISM /Online /Cleanup-Image /RestoreHealth çalıştır. Windows Defender ile tam tarama yap. Sistem Geri Yükleme yap."
   },
   {
     "error_code": "0x00000031",
@@ -417,7 +458,8 @@
     "description": "Windows önyükleme sırasında Phase 0 başlatma aşamasında başarısız oldu. Genellikle donanım uyumsuzluğu veya bozuk BIOS/UEFI ayarlarından kaynaklanır.",
     "common_causes": "• Uyumsuz donanım veya sürücü\n• Bozuk BIOS/UEFI ayarları\n• Arızalı RAM\n• Anakart sorunu\n• Hatalı BIOS güncellemesi",
     "solution_steps": "1. BIOS'u varsayılana sıfırlayın\n2. Yeni takılan donanımları çıkarın\n3. RAM'leri tek tek deneyin\n4. BIOS'u güncelleyin\n5. Windows kurulum medyası ile onarım başlatın",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x31--phase0-initialization-failed"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x31--phase0-initialization-failed",
+    "kesin_cozum": "En kesin çözüm: BIOS'u varsayılana sıfırla (CMOS pilini çıkar). Yeni takılan donanımları çıkar. RAM'leri tek tek dene. BIOS'u güncelle."
   },
   {
     "error_code": "0x0000002E",
@@ -427,7 +469,8 @@
     "description": "Sistem veri yolunda (data bus) düzeltilemeyen bir hata oluştu. Neredeyse her zaman fiziksel bir donanım sorunudur — RAM, işlemci veya anakart arızası.",
     "common_causes": "• Arızalı RAM bellek\n• Hatalı işlemci önbelleği\n• Anakart veri yolu arızası\n• Aşırı ısınma\n• Overclock kaynaklı kararsızlık",
     "solution_steps": "1. BIOS'a girin, overclock ayarlarını kapatın\n2. Windows Bellek Tanılama Aracı'nı çalıştırın\n3. İşlemci sıcaklığını kontrol edin\n4. RAM'leri tek tek test edin\n5. Anakartı görsel olarak kontrol edin (şişmiş kapasitör)\n6. BIOS pilini çıkarıp sıfırlayın",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x2e--data-bus-error"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x2e--data-bus-error",
+    "kesin_cozum": "En kesin çözüm: BIOS'a gir, overclock'u kapat. Windows Bellek Tanılama çalıştır. RAM'leri tek tek test et. Anakartı görsel olarak kontrol et (şişmiş kapasitör)."
   },
   {
     "error_code": "0x00000109",
@@ -437,7 +480,8 @@
     "description": "Windows çekirdeği, kritik bir kod veya veri yapısının bozulduğunu tespit etti. Kötü amaçlı yazılım veya hatalı bir sürücü bu hataya neden olabilir.",
     "common_causes": "• Kötü amaçlı yazılım (rootkit, driver hijacking)\n• Bozuk sürücüler\n• Hasarlı sistem dosyaları\n• Disk hataları\n• Arızalı RAM",
     "solution_steps": "1. Windows Defender Çevrimdışı Tarama çalıştırın\n2. 'sfc /scannow' ve 'DISM /Online /Cleanup-Image /RestoreHealth' çalıştırın\n3. Güvenli Mod'da son yüklenen sürücüyü kaldırın\n4. Windows Bellek Tanılama Aracı'nı çalıştırın\n5. Sistem Geri Yükleme yapın\n6. Son çare: Windows'u sıfırlayın",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x109--critical-structure-corruption"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x109--critical-structure-corruption",
+    "kesin_cozum": "En kesin çözüm: Windows Defender Çevrimdışı Tarama yap. sfc /scannow ve DISM çalıştır. Güvenli Mod'da son sürücüyü kaldır. En tehlikeli hatalardan — rootkit olabilir."
   },
   {
     "error_code": "0x0000001C",
@@ -447,7 +491,8 @@
     "description": "Sayfa Çerçeve Numarası (PFN) referans sayısı bozuldu. Genellikle bellek yönetimi ile ilgili bir donanım veya sürücü sorunundan kaynaklanır.",
     "common_causes": "• Arızalı RAM bellek\n• Bozuk sürücüler\n• Hasarlı sistem dosyaları\n• Disk hataları",
     "solution_steps": "1. Windows Bellek Tanılama Aracı'nı çalıştırın\n2. 'sfc /scannow' çalıştırın\n3. Sürücülerinizi güncelleyin\n4. Disk kontrolü: 'chkdsk C: /f'\n5. RAM'leri tek tek test edin",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x1c--pfn-reference-count"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x1c--pfn-reference-count",
+    "kesin_cozum": "En kesin çözüm: Windows Bellek Tanılama Aracı'nı çalıştır. sfc /scannow çalıştır. chkdsk C: /f ile disk kontrolü yap. RAM'leri tek tek dene."
   },
   {
     "error_code": "0x0000004C",
@@ -457,7 +502,8 @@
     "description": "Windows, işlenemeyen kritik bir donanım hatası ile karşılaştı. Genellikle ciddi sistem dosyası bozulması veya kayıt defteri hasarından kaynaklanır.",
     "common_causes": "• Hasarlı sistem dosyaları\n• Bozuk kayıt defteri\n• Disk hataları\n• Kötü amaçlı yazılım\n• Bozuk Windows güncellemesi",
     "solution_steps": "1. 'sfc /scannow' çalıştırın\n2. 'DISM /Online /Cleanup-Image /RestoreHealth' çalıştırın\n3. Windows Defender ile tam tarama yapın\n4. Sistem Geri Yükleme yapın\n5. Son yüklenen güncellemeyi kaldırın\n6. Windows'u onarın veya sıfırlayın",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x4c--fatal-unhandled-hard-error"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x4c--fatal-unhandled-hard-error",
+    "kesin_cozum": "En kesin çözüm: sfc /scannow ve DISM /Online /Cleanup-Image /RestoreHealth çalıştır. Windows Defender ile tam tarama yap. Sistem Geri Yükleme yap."
   },
   {
     "error_code": "0x00000079",
@@ -467,7 +513,8 @@
     "description": "Windows HAL (Hardware Abstraction Layer) dosyası ile sistem donanımı veya çekirdek arasında uyumsuzluk var. Genellikle donanım değişikliği veya yanlış Windows sürümü yüklemesinden kaynaklanır.",
     "common_causes": "• Anakart veya işlemci değişikliği\n• Yanlış Windows sürümü yüklemesi (32-bit ↔ 64-bit)\n• Bozuk HAL dosyası\n• BIOS/UEFI ayar değişikliği",
     "solution_steps": "1. Son donanım değişikliklerini geri alın\n2. BIOS'u varsayılana sıfırlayın\n3. Windows onarım kurulumu yapın\n4. 'bootrec /rebuildbcd' çalıştırın\n5. Windows'u yeniden yükleyin (son çare)",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x79--mismatched-hal"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x79--mismatched-hal",
+    "kesin_cozum": "En kesin çözüm: Son donanım değişikliklerini geri al (anakart/işlemci değiştiyse). BIOS'u varsayılana sıfırla. Windows onarım kurulumu yap."
   },
   {
     "error_code": "0x000000A0",
@@ -477,7 +524,8 @@
     "description": "Windows Güç Yöneticisi'nde (Power Manager) dahili bir hata oluştu. Genellikle uyku/uyanma döngüsünde veya güç profili değişikliklerinde görülür.",
     "common_causes": "• Bozuk güç yönetimi sürücüleri\n• Hatalı BIOS güç ayarları\n• Uyumsuz çevre birimleri\n• Windows Hızlı Başlangıç sorunu\n• Hasarlı sistem dosyaları",
     "solution_steps": "1. Denetim Masası > Güç Seçenekleri > 'Hızlı Başlangıcı aç'ı kapatın\n2. Güç planını varsayılana sıfırlayın\n3. Chipset ve güç yönetimi sürücülerini güncelleyin\n4. 'sfc /scannow' çalıştırın\n5. BIOS güç ayarlarını varsayılana döndürün",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0xa0--internal-power-error"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0xa0--internal-power-error",
+    "kesin_cozum": "En kesin çözüm: Denetim Masası > Güç Seçenekleri'nden 'Hızlı Başlangıcı aç' seçeneğini kapat. Chipset sürücülerini güncelle. BIOS güç ayarlarını varsayılana döndür."
   },
   {
     "error_code": "0x0000002A",
@@ -487,7 +535,8 @@
     "description": "Bir G/Ç İstek Paketi (IRP) tutarsız bir durumda. Genellikle hatalı bir sürücünün IRP'yi yanlış işlemesinden kaynaklanır.",
     "common_causes": "• Bozuk sürücü\n• Hatalı depolama veya ağ sürücüsü\n• Hasarlı sistem dosyaları",
     "solution_steps": "1. Güvenli Mod'da başlatın\n2. Son yüklenen sürücüyü kaldırın\n3. 'sfc /scannow' çalıştırın\n4. Sürücülerinizi güncelleyin\n5. Disk kontrolü yapın",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x2a--inconsistent-irp"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x2a--inconsistent-irp",
+    "kesin_cozum": "En kesin çözüm: Güvenli Mod'da son yüklenen sürücüyü kaldır. sfc /scannow çalıştır. Depolama/ağ sürücülerini güncelle."
   },
   {
     "error_code": "0x0000004A",
@@ -497,7 +546,8 @@
     "description": "Bir sistem servisi, IRQL seviyesi sıfırdan büyükken çağrıldı. Genellikle hatalı bir sürücü veya yazılımın yanlış kesme seviyesinde işlem yapmasından kaynaklanır.",
     "common_causes": "• Hatalı sürücü\n• Uyumsuz donanım\n• Hasarlı sistem dosyaları",
     "solution_steps": "1. Güvenli Mod'da başlatın\n2. Son yüklenen sürücü veya yazılımı kaldırın\n3. 'sfc /scannow' çalıştırın\n4. Sürücülerinizi güncelleyin\n5. Windows Bellek Tanılama Aracı'nı çalıştırın",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x4a--irql-gt-zero-at-system-service"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x4a--irql-gt-zero-at-system-service",
+    "kesin_cozum": "En kesin çözüm: Güvenli Mod'da son yüklenen sürücüyü kaldır. sfc /scannow çalıştır. Windows Bellek Tanılama Aracı'nı çalıştır."
   },
   {
     "error_code": "0xDEADDEAD",
@@ -507,6 +557,7 @@
     "description": "Bu mavi ekran, bir kullanıcı veya yönetici tarafından manuel olarak tetiklendi. Sistemde gerçek bir hata yoktur. Genellikle test veya hata ayıklama amacıyla Ctrl+Scroll Lock tuş kombinasyonu ile oluşturulur.",
     "common_causes": "• Klavyeden Ctrl+Scroll Lock tuşlarına iki kez basılması\n• SysRq tuş kombinasyonu\n• Test/debug amaçlı manuel crash",
     "solution_steps": "1. Bu bir donanım/yazılım hatası değildir\n2. Eğer kasten yapılmadıysa, klavyenizde Scroll Lock tuşuna yanlışlıkla basılmış olabilir\n3. Herhangi bir işlem yapmanıza gerek yoktur\n4. Tekrar ediyorsa klavye sürücünüzü kontrol edin",
-    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0xdeaddead--manually-initiated-crash"
+    "related_kb_urls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0xdeaddead--manually-initiated-crash",
+    "kesin_cozum": "Bu hata manuel tetiklenmiştir — gerçek bir sorun yoktur. Klavyede Scroll Lock tuşuna yanlışlıkla basılmış olabilir. İşlem yapmanıza gerek yoktur."
   }
 ]
