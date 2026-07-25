@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/BsodDoctor.Service/BsodDoctor.Service.csproj" />
+    <Project Path="src/BsodDoctor/BsodDoctor.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/BsodDoctor.Tests/BsodDoctor.Tests.csproj" />
+  </Folder>
+</Solution>

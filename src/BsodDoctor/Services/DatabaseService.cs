@@ -87,6 +87,30 @@ public class DatabaseService : IDatabaseService
             await alterCmd.ExecuteNonQueryAsync(cancellationToken);
         }
 
+        // Migration: is_notified sütunu yoksa ekle (eski veritabanları için)
+        var hasIsNotified = false;
+        var pragmaCmd2 = connection.CreateCommand();
+        pragmaCmd2.CommandText = "PRAGMA table_info(analysis_history)";
+        await using (var reader2 = await pragmaCmd2.ExecuteReaderAsync(cancellationToken))
+        {
+            while (await reader2.ReadAsync(cancellationToken))
+            {
+                var colName = reader2.GetString(1);
+                if (colName == "is_notified")
+                {
+                    hasIsNotified = true;
+                    break;
+                }
+            }
+        }
+
+        if (!hasIsNotified)
+        {
+            var alterCmd2 = connection.CreateCommand();
+            alterCmd2.CommandText = "ALTER TABLE analysis_history ADD COLUMN is_notified INTEGER DEFAULT 0";
+            await alterCmd2.ExecuteNonQueryAsync(cancellationToken);
+        }
+
         // Seed data import (tablo boşsa)
         if (!string.IsNullOrEmpty(seedDataPath))
         {
@@ -191,6 +215,37 @@ public class DatabaseService : IDatabaseService
             """;
         command.Parameters.AddWithValue("@id", historyId);
         command.Parameters.AddWithValue("@feedback", feedback ?? (object)DBNull.Value);
+
+        await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Belirtilen analiz kaydı için bildirim daha önce gönderilmiş mi?
+    /// </summary>
+    public async Task<bool> IsNotifiedAsync(int historyId, CancellationToken cancellationToken = default)
+    {
+        await using var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync(cancellationToken);
+
+        var command = connection.CreateCommand();
+        command.CommandText = "SELECT is_notified FROM analysis_history WHERE id = @id LIMIT 1";
+        command.Parameters.AddWithValue("@id", historyId);
+
+        var result = await command.ExecuteScalarAsync(cancellationToken);
+        return result is not null && Convert.ToBoolean(result);
+    }
+
+    /// <summary>
+    /// Belirtilen analiz kaydını bildirim gönderildi olarak işaretler.
+    /// </summary>
+    public async Task MarkAsNotifiedAsync(int historyId, CancellationToken cancellationToken = default)
+    {
+        await using var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync(cancellationToken);
+
+        var command = connection.CreateCommand();
+        command.CommandText = "UPDATE analysis_history SET is_notified = 1 WHERE id = @id";
+        command.Parameters.AddWithValue("@id", historyId);
 
         await command.ExecuteNonQueryAsync(cancellationToken);
     }

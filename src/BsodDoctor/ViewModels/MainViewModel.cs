@@ -166,6 +166,53 @@ public partial class MainViewModel : ObservableObject
     }
 
     /// <summary>
+    /// Belirtilen hata kodunu veritabanından yükler ve UI'a yansıtır.
+    /// Toast bildirimine tıklandığında (--open-error argümanı ile) çağrılır.
+    /// </summary>
+    public async Task LoadErrorByCodeAsync(string errorCode)
+    {
+        ResetResultProperties();
+
+        try
+        {
+            var bsodError = await _databaseService.FindErrorByCodeAsync(errorCode);
+            if (bsodError == null)
+            {
+                StatusText = $"Hata kodu bulunamadı: {errorCode}";
+                return;
+            }
+
+            // Geçmiş kaydını bul (çözülmemiş kayıtlar arasında)
+            var historyItems = await _databaseService.GetHistoryAsync(onlyUnresolved: true);
+            var historyItem = historyItems.FirstOrDefault(h => h.ErrorCode == errorCode);
+
+            ErrorCode = bsodError.ErrorCode;
+            ErrorName = bsodError.ErrorName;
+            Description = bsodError.Description ?? "Açıklama bulunamadı.";
+            SolutionSteps = bsodError.SolutionSteps ?? string.Empty;
+            KesinCozum = bsodError.KesinCozum ?? string.Empty;
+            CommonCauses = bsodError.CommonCauses ?? string.Empty;
+            RelatedKbUrls = bsodError.RelatedKbUrls ?? string.Empty;
+            Severity = bsodError.Severity;
+            HasResult = true;
+
+            if (historyItem != null)
+            {
+                _currentHistoryId = historyItem.Id;
+                DumpFilePath = historyItem.DumpFilePath;
+                IsResolved = historyItem.IsResolved;
+            }
+
+            StatusText = $"{bsodError.ErrorName} yüklendi.";
+        }
+        catch (Exception ex)
+        {
+            StatusText = $"Hata yüklenemedi: {ex.Message}";
+            Debug.WriteLine($"[BSOD Doctor] LoadErrorByCodeAsync hatası: {ex}");
+        }
+    }
+
+    /// <summary>
     /// Tüm sonuç property'lerini varsayılana döndürür.
     /// </summary>
     private void ResetResultProperties()

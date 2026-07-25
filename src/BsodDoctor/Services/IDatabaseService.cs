@@ -24,4 +24,10 @@ public interface IDatabaseService
 
     /// <summary>Geçmiş analiz kayıtlarını getirir.</summary>
     Task<List<HistoryItem>> GetHistoryAsync(bool onlyUnresolved = true, CancellationToken cancellationToken = default);
+
+    /// <summary>Belirtilen analiz kaydı için bildirim daha önce gönderilmiş mi?</summary>
+    Task<bool> IsNotifiedAsync(int historyId, CancellationToken cancellationToken = default);
+
+    /// <summary>Belirtilen analiz kaydını bildirim gönderildi olarak işaretler.</summary>
+    Task MarkAsNotifiedAsync(int historyId, CancellationToken cancellationToken = default);
 }
