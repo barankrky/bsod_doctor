@@ -55,6 +55,8 @@ begin
 end;
 
 function InitializeSetup: Boolean;
+var
+  ResultCode: Integer;
 begin
   if not IsDotNetRuntimeInstalled then
   begin
