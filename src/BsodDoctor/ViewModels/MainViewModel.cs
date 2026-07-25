@@ -35,7 +35,7 @@ public partial class MainViewModel : ObservableObject
         }
 
         _databaseService = new DatabaseService(dbPath);
-        _watchService = new BsodWatchService(_databaseService, TimeSpan.FromDays(1), TimeSpan.FromDays(1));
+        _watchService = new BsodWatchService(_databaseService, TimeSpan.FromDays(1));
 
         // Önce veritabanını başlat, sonra otomatik taramayı başlat
         _ = InitializeAsync(seedPath);
@@ -60,14 +60,14 @@ public partial class MainViewModel : ObservableObject
     /// <summary>
     /// One-shot tarama yap, sonucu doğrudan UI'a yansıt.
     /// </summary>
-    private async Task StartWatchScanAsync()
+    private async Task StartWatchScanAsync(bool scanAll = false)
     {
-        StatusText = "Minidump taranıyor...";
+        StatusText = scanAll ? "Tüm dump dosyaları taranıyor..." : "Minidump taranıyor...";
         IsAnalyzing = true;
 
         try
         {
-            var result = await _watchService.ScanOnceAsync();
+            var result = await _watchService.ScanOnceAsync(scanAll);
 
             if (result != null)
             {
@@ -88,7 +88,9 @@ public partial class MainViewModel : ObservableObject
             }
             else
             {
-                StatusText = "Yeni bir BSOD bulunamadı.";
+                StatusText = scanAll
+                    ? "Hiçbir dump dosyasında yeni hata bulunamadı."
+                    : "Yeni bir BSOD bulunamadı.";
             }
         }
         catch (Exception ex)
@@ -171,7 +173,7 @@ public partial class MainViewModel : ObservableObject
         Severity = 0;
         IsResolved = false;
 
-        await StartWatchScanAsync();
+        await StartWatchScanAsync(scanAll: true);
     }
 
     /// <summary>

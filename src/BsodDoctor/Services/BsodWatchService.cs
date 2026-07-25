@@ -4,59 +4,53 @@ using BsodDoctor.Models;
 namespace BsodDoctor.Services;
 
 /// <summary>
-/// Minidump dizinini tarayan, yeni hataları bulan ve sonucu döndüren one-shot servis.
-/// Sürekli beklemez — tara, bul, döndür, kapan.
-/// Event-driven değil, direkt <see cref="AnalysisResult"/> döndürür.
+/// Minidump dizinini tarayan, hataları bulan ve sonucu döndüren servis.
 /// </summary>
 public class BsodWatchService
 {
     private readonly DatabaseService _db;
-    private readonly TimeSpan _fileAgeLimit;
     private readonly TimeSpan _cooldown;
 
-    public BsodWatchService(DatabaseService db, TimeSpan? fileAgeLimit = null, TimeSpan? cooldown = null)
+    public BsodWatchService(DatabaseService db, TimeSpan? cooldown = null)
     {
         _db = db;
-        _fileAgeLimit = fileAgeLimit ?? TimeSpan.FromDays(1);
         _cooldown = cooldown ?? TimeSpan.FromDays(1);
     }
 
     /// <summary>
-    /// One-shot tarama. Yeni hata bulunursa <see cref="AnalysisResult"/> döndürür,
-    /// bulunamazsa null döndürür.
+    /// One-shot tarama.
+    /// <paramref name="scanAll"/> = true ise tüm .dmp dosyalarını tara,
+    /// false ise sadece son 24 saatte değişmiş olanları tara.
     /// </summary>
-    public async Task<AnalysisResult?> ScanOnceAsync(CancellationToken cancellationToken = default)
+    public async Task<AnalysisResult?> ScanOnceAsync(bool scanAll = false, CancellationToken cancellationToken = default)
     {
         try
         {
-            // 1) Minidump dizinini kontrol et
             var dumpDirs = GetDumpDirectories();
-
             if (dumpDirs.Count == 0)
                 return null;
 
-            // 2) Son 1 günde değişmiş .dmp dosyalarını bul
-            var dumpFiles = FindRecentDumpFiles(dumpDirs);
+            var dumpFiles = scanAll
+                ? GetAllDumpFiles(dumpDirs)
+                : FindRecentDumpFiles(dumpDirs);
+
             if (dumpFiles.Count == 0)
                 return null;
 
-            // 3) Her dosyayı dene — ilk yeni hatayı bulunca dur
             foreach (var dumpFile in dumpFiles)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                // .dmp dosyasını oku
                 var (errorCode, errorMessage) = MinidumpReader.ReadBugCheckCode(dumpFile);
 
                 if (errorCode == null)
-                    continue; // bu dosya okunamadı, diğerine geç
+                    continue;
 
-                // Cooldown kontrolü — aynı hata son 24 saatte görüldüyse atla
+                // Cooldown kontrolü — aynı hata cooldown süresinde görüldüyse atla
                 var inCooldown = await _db.IsErrorInCooldownAsync(errorCode, _cooldown, cancellationToken);
                 if (inCooldown)
                     continue;
 
-                // Veritabanında çözüm var mı?
                 var bsodError = await _db.FindErrorByCodeAsync(errorCode, cancellationToken);
 
                 var result = new AnalysisResult
@@ -73,14 +67,12 @@ public class BsodWatchService
                     AnalysisTime = DateTime.Now
                 };
 
-                // History'ye kaydet
                 var historyId = await _db.SaveAnalysisRecordAsync(result, cancellationToken);
                 result.HistoryId = historyId;
 
-                return result; // sadece ilk yeni hatayı döndür
+                return result;
             }
 
-            // Tüm dosyalar kontrol edildi, yeni hata yok
             return null;
         }
         catch (OperationCanceledException)
@@ -93,17 +85,14 @@ public class BsodWatchService
         }
     }
 
-    /// <summary>
-    /// Varsayılan minidump dizinlerini döndürür.
-    /// Windows'ta C:\Windows\Minidump, Linux'ta test dizini.
-    /// </summary>
+    #region Dizin / Dosya Bulma
+
     private static List<string> GetDumpDirectories()
     {
         var dirs = new List<string>();
 
         if (OperatingSystem.IsWindows())
         {
-            // Registry'den gerçek Minidump dizinini oku (REG_EXPAND_SZ tipindeki değerleri genişlet)
             try
             {
                 using var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
@@ -128,12 +117,8 @@ public class BsodWatchService
                     }
                 }
             }
-            catch
-            {
-                // Registry erişilemezse fallback'e geç
-            }
+            catch { }
 
-            // Fallback: registry okunamazsa varsayılan yolları dene
             if (dirs.Count == 0)
             {
                 var minidumpDir = Path.Combine(
@@ -149,7 +134,6 @@ public class BsodWatchService
         }
         else
         {
-            // Linux test ortamı — test .dmp dosyaları
             var testDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestDumps");
             if (Directory.Exists(testDir))
                 dirs.Add(testDir);
@@ -158,13 +142,11 @@ public class BsodWatchService
         return dirs;
     }
 
-    /// <summary>
-    /// Belirtilen dizinlerde son 1 günde değişmiş .dmp dosyalarını bulur.
-    /// </summary>
-    private List<string> FindRecentDumpFiles(List<string> directories)
+    /// <summary>Son 1 günde değişmiş .dmp dosyalarını bulur.</summary>
+    private static List<string> FindRecentDumpFiles(List<string> directories)
     {
         var files = new List<string>();
-        var cutoff = DateTime.UtcNow - _fileAgeLimit;
+        var cutoff = DateTime.UtcNow - TimeSpan.FromDays(1);
 
         foreach (var dir in directories)
         {
@@ -174,22 +156,42 @@ public class BsodWatchService
                 {
                     try
                     {
-                        var lastWrite = File.GetLastWriteTimeUtc(file);
-                        if (lastWrite >= cutoff)
+                        if (File.GetLastWriteTimeUtc(file) >= cutoff)
                             files.Add(file);
                     }
-                    catch
-                    {
-                        // erişilemeyen dosya — skip
-                    }
+                    catch { }
                 }
             }
-            catch
-            {
-                // erişilemeyen dizin — skip
-            }
+            catch { }
         }
 
         return files;
     }
+
+    /// <summary>Tüm .dmp dosyalarını bulur (yaş sınırı yok).</summary>
+    private static List<string> GetAllDumpFiles(List<string> directories)
+    {
+        var files = new List<string>();
+        foreach (var dir in directories)
+        {
+            try
+            {
+                foreach (var file in Directory.GetFiles(dir, "*.dmp", SearchOption.TopDirectoryOnly))
+                {
+                    try
+                    {
+                        // Dosyayı okuyabiliyor muyuz diye kontrol et
+                        using var fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read);
+                        if (fs.Length >= 36) // minidump header en az 36 byte
+                            files.Add(file);
+                    }
+                    catch { }
+                }
+            }
+            catch { }
+        }
+        return files;
+    }
+
+    #endregion
 }
