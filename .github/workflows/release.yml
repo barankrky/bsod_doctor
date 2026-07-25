@@ -31,7 +31,7 @@ jobs:
       run: dotnet build src/BsodDoctor/BsodDoctor.csproj -c Release --no-restore
 
     - name: Test
-      run: dotnet run --project tests/BsodDoctor.Tests
+      run: dotnet test tests/BsodDoctor.Tests/BsodDoctor.Tests.csproj --no-restore
 
     - name: Publish
       run: dotnet publish src/BsodDoctor/BsodDoctor.csproj -c Release --no-build -o publish
