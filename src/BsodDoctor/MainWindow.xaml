@@ -250,7 +250,7 @@
         </Border>
 
         <!-- Alt Bilgi -->
-        <TextBlock Grid.Row="5" Text="v0.3.0 — BSOD Doctor — Watch Service" 
+        <TextBlock Grid.Row="5" Text="v1.0.0 — BSOD Doctor [Beta] — Watch Service" 
                    FontSize="11" Foreground="{DynamicResource ThemeLightMuted}" HorizontalAlignment="Right"/>
     </Grid>
 </Window>
