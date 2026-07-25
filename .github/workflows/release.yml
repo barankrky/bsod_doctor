@@ -4,6 +4,9 @@ on:
   push:
     branches: [master]
 
+permissions:
+  contents: write
+
 env:
   APP_VERSION: "0.1-beta.${{ github.run_number }}"
 
