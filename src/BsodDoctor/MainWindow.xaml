@@ -157,15 +157,15 @@
 
                     <!-- İlgili Linkler -->
                     <TextBlock Text="İlgili Bağlantılar" Style="{StaticResource SectionTitle}"
-                               Visibility="{Binding RelatedKbUrls, Converter={StaticResource BoolToVisibility}}"/>
+                               Visibility="{Binding HasRelatedKbUrls, Converter={StaticResource BoolToVisibility}}"/>
                     <TextBlock Text="{Binding RelatedKbUrls}" TextWrapping="Wrap" FontSize="12" Foreground="#1565C0"
-                               Visibility="{Binding RelatedKbUrls, Converter={StaticResource BoolToVisibility}}"/>
+                               Visibility="{Binding HasRelatedKbUrls, Converter={StaticResource BoolToVisibility}}"/>
 
                     <!-- Dosya Yolu -->
                     <TextBlock Text="Kaynak Dosya" Style="{StaticResource SectionTitle}"
-                               Visibility="{Binding DumpFilePath, Converter={StaticResource BoolToVisibility}}"/>
+                               Visibility="{Binding HasDumpFilePath, Converter={StaticResource BoolToVisibility}}"/>
                     <TextBlock Text="{Binding DumpFilePath}" FontSize="11" FontFamily="Consolas" Foreground="#888"
-                               Visibility="{Binding DumpFilePath, Converter={StaticResource BoolToVisibility}}"/>
+                               Visibility="{Binding HasDumpFilePath, Converter={StaticResource BoolToVisibility}}"/>
 
                     <!-- Çözüldü Onayı -->
                     <Border Background="#E8F5E9" Padding="12" CornerRadius="4" Margin="0,12,0,0"

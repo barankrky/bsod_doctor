@@ -37,11 +37,8 @@ public partial class MainViewModel : ObservableObject
         _databaseService = new DatabaseService(dbPath);
         _watchService = new BsodWatchService(_databaseService, TimeSpan.FromDays(1), TimeSpan.FromDays(1));
 
-        // Veritabanını başlat + seed data import
+        // Önce veritabanını başlat, sonra otomatik taramayı başlat
         _ = InitializeAsync(seedPath);
-
-        // Otomatik tarama başlat
-        _ = StartWatchScanAsync();
     }
 
     private async Task InitializeAsync(string seedPath)
@@ -50,6 +47,9 @@ public partial class MainViewModel : ObservableObject
         {
             await _databaseService.InitializeAsync(seedPath);
             StatusText = "Hazır";
+
+            // DB hazır olduktan sonra otomatik taramayı başlat
+            await StartWatchScanAsync();
         }
         catch (Exception ex)
         {
@@ -125,9 +125,11 @@ public partial class MainViewModel : ObservableObject
     private string _commonCauses = string.Empty;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasRelatedKbUrls))]
     private string _relatedKbUrls = string.Empty;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasDumpFilePath))]
     private string _dumpFilePath = string.Empty;
 
     [ObservableProperty]
@@ -142,6 +144,10 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private bool _isResolved;
 
+    // Computed property'ler — Visibility binding için
+    public bool HasRelatedKbUrls => !string.IsNullOrEmpty(RelatedKbUrls);
+    public bool HasDumpFilePath => !string.IsNullOrEmpty(DumpFilePath);
+
     // ---- Commands ----
 
     /// <summary>
@@ -152,7 +158,7 @@ public partial class MainViewModel : ObservableObject
     {
         if (IsAnalyzing) return;
 
-        IsAnalyzing = true;
+        // Önce ekranı temizle
         HasResult = false;
         ErrorCode = string.Empty;
         ErrorName = string.Empty;
