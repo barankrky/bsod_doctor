@@ -30,9 +30,6 @@ VersionInfoCompany={#MyAppPublisher}
 VersionInfoDescription={#MyAppName}
 ShowLanguageDialog=no
 
-[Languages]
-Name: "turkish"; MessagesFile: "compiler:Languages\Turkish.isl"
-
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkedonce
 
