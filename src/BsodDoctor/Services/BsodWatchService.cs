@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO;
 using BsodDoctor.Models;
 
@@ -6,12 +7,12 @@ namespace BsodDoctor.Services;
 /// <summary>
 /// Minidump dizinini tarayan, hataları bulan ve sonucu döndüren servis.
 /// </summary>
-public class BsodWatchService
+public class BsodWatchService : IBsodWatchService
 {
-    private readonly DatabaseService _db;
+    private readonly IDatabaseService _db;
     private readonly TimeSpan _cooldown;
 
-    public BsodWatchService(DatabaseService db, TimeSpan? cooldown = null)
+    public BsodWatchService(IDatabaseService db, TimeSpan? cooldown = null)
     {
         _db = db;
         _cooldown = cooldown ?? TimeSpan.FromDays(1);
@@ -64,7 +65,7 @@ public class BsodWatchService
                     CommonCauses = bsodError?.CommonCauses ?? string.Empty,
                     RelatedKbUrls = bsodError?.RelatedKbUrls ?? string.Empty,
                     Severity = bsodError?.Severity ?? 0,
-                    AnalysisTime = DateTime.Now
+                    AnalysisTime = DateTime.UtcNow
                 };
 
                 var historyId = await _db.SaveAnalysisRecordAsync(result, cancellationToken);
@@ -117,7 +118,11 @@ public class BsodWatchService
                     }
                 }
             }
-            catch { }
+            catch (Exception ex) when (ex is System.Security.SecurityException or UnauthorizedAccessException)
+            {
+                // Kayıt defterine erişim yetkisi yok — varsayılan yolları dene
+                Debug.WriteLine($"[BSOD Doctor] Registry erişim hatası: {ex.Message}");
+            }
 
             if (dirs.Count == 0)
             {
@@ -159,10 +164,18 @@ public class BsodWatchService
                         if (File.GetLastWriteTimeUtc(file) >= cutoff)
                             files.Add(file);
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        // Tek bir dosyaya erişilemezse atla — diğerlerine devam et
+                        Debug.WriteLine($"[BSOD Doctor] Dosya atlanıyor (okuma): {ex.Message}");
+                    }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                // Dizine erişilemezse atla — sıradaki dizini dene
+                Debug.WriteLine($"[BSOD Doctor] Dizin taranamadı: {ex.Message}");
+            }
         }
 
         return files;
@@ -185,10 +198,18 @@ public class BsodWatchService
                         if (fs.Length >= 36) // minidump header en az 36 byte
                             files.Add(file);
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        // Dosya kilitli veya erişilemez — atla
+                        Debug.WriteLine($"[BSOD Doctor] Dosya atlanıyor (erişim): {ex.Message}");
+                    }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                // Dizine erişilemezse atla
+                Debug.WriteLine($"[BSOD Doctor] Dizin taranamadı: {ex.Message}");
+            }
         }
         return files;
     }

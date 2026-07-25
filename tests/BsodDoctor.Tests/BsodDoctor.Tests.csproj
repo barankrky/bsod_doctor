@@ -19,6 +19,8 @@
   <ItemGroup>
     <Compile Include="..\..\src\BsodDoctor\Services\MinidumpReader.cs" />
     <Compile Include="..\..\src\BsodDoctor\Services\DatabaseService.cs" />
+    <Compile Include="..\..\src\BsodDoctor\Services\IDatabaseService.cs" />
+    <Compile Include="..\..\src\BsodDoctor\Services\IBsodWatchService.cs" />
     <Compile Include="..\..\src\BsodDoctor\Models\*.cs" />
   </ItemGroup>
 

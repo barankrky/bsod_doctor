@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Text.Json;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -11,11 +13,13 @@ namespace BsodDoctor.ViewModels;
 
 /// <summary>
 /// Ana pencere için ViewModel.
+/// Servis bağımlılıkları constructor üzerinden enjekte edilir (manual DI).
+/// Asenkron başlatma <see cref="Initialization"/> Task'i üzerinden yönetilir.
 /// </summary>
 public partial class MainViewModel : ObservableObject
 {
-    private readonly DatabaseService _databaseService;
-    private readonly BsodWatchService _watchService;
+    private readonly IDatabaseService _databaseService;
+    private readonly IBsodWatchService _watchService;
     private readonly string _settingsPath;
 
     private int _currentHistoryId;
@@ -25,46 +29,33 @@ public partial class MainViewModel : ObservableObject
         public bool IsDarkTheme { get; init; }
     }
 
-    public MainViewModel()
+    public MainViewModel(IDatabaseService databaseService, IBsodWatchService watchService, string settingsPath)
     {
-        var baseDir = AppDomain.CurrentDomain.BaseDirectory;
-        var dataDir = Path.Combine(baseDir, "Data");
-        Directory.CreateDirectory(dataDir);
+        _databaseService = databaseService;
+        _watchService = watchService;
+        _settingsPath = settingsPath;
 
-        _settingsPath = Path.Combine(dataDir, "settings.json");
+        // Versiyon bilgisini assembly'den al
+        VersionText = Assembly.GetExecutingAssembly().GetName()?.Version?.ToString(3) ?? "1.0.0";
 
-        var dbPath = Path.Combine(dataDir, "bsod_errors.db");
-
-        // Seed data yolu — öncelik sırası:
-        // 1) Yayınlanmış / kurulmuş uygulamada baseDir/database/seed_data.json
-        // 2) Geliştirme ortamında repo kökü (bin/Debug/net10.0-windows/../../../../../database/seed_data.json)
-        // 3) Çalışma dizinine göre (dotnet run kök dizinde)
-        var seedPath = Path.Combine(baseDir, "database", "seed_data.json");
-        if (!File.Exists(seedPath))
-        {
-            seedPath = Path.Combine(baseDir, "..", "..", "..", "..", "..", "database", "seed_data.json");
-            if (!File.Exists(seedPath))
-            {
-                var cwdSeed = Path.Combine(Environment.CurrentDirectory, "database", "seed_data.json");
-                if (File.Exists(cwdSeed))
-                    seedPath = cwdSeed;
-            }
-        }
-
-        _databaseService = new DatabaseService(dbPath);
-        _watchService = new BsodWatchService(_databaseService, TimeSpan.FromDays(1));
-
-        // Önce veritabanını başlat, sonra geçmişi yükle ve otomatik taramayı başlat
-        _ = InitializeAsync(seedPath);
+        // Asenkron başlatma — hatalar Task içinde yakalanır, fire-and-forget yok
+        Initialization = InitializeAsync();
     }
 
-    private async Task InitializeAsync(string seedPath)
+    /// <summary>
+    /// ViewModel'in asenkron başlatma işlemini temsil eden Task.
+    /// Consumer'lar bu Task'i await ederek başlatmanın tamamlanmasını bekleyebilir.
+    /// </summary>
+    public Task Initialization { get; }
+
+    private async Task InitializeAsync()
     {
         // Kayıtlı tema tercihini yükle ve uygula
         LoadAndApplyTheme();
 
         try
         {
+            var seedPath = ResolveSeedPath(AppDomain.CurrentDomain.BaseDirectory);
             await _databaseService.InitializeAsync(seedPath);
             StatusText = "Hazır";
 
@@ -77,7 +68,32 @@ public partial class MainViewModel : ObservableObject
         catch (Exception ex)
         {
             StatusText = $"Veritabanı hatası: {ex.Message}";
+            Debug.WriteLine($"[BSOD Doctor] InitializeAsync hatası: {ex}");
         }
+    }
+
+    /// <summary>
+    /// Seed data JSON dosyasının yolunu bulur.
+    /// Öncelik sırası: publish çıktısı → repo kökü.
+    /// </summary>
+    private static string ResolveSeedPath(string baseDir)
+    {
+        // 1) Published/build output: {baseDir}/database/seed_data.json
+        var published = Path.Combine(baseDir, "database", "seed_data.json");
+        if (File.Exists(published))
+            return published;
+
+        // 2) Repo kökü: baseDir'den yukarı çık ve database/seed_data.json ara
+        var dir = new DirectoryInfo(baseDir);
+        while (dir != null)
+        {
+            var candidate = Path.Combine(dir.FullName, "database", "seed_data.json");
+            if (File.Exists(candidate))
+                return candidate;
+            dir = dir.Parent;
+        }
+
+        return published; // hiçbiri yoksa — InitializeAsync içindeki catch yakalar
     }
 
     /// <summary>
@@ -92,9 +108,10 @@ public partial class MainViewModel : ObservableObject
             foreach (var item in items)
                 HistoryItems.Add(item);
         }
-        catch
+        catch (Exception ex)
         {
             // Geçmiş yüklenemezse sessizce geç — kullanıcı butonla tekrar deneyebilir
+            Debug.WriteLine($"[BSOD Doctor] Geçmiş yüklenemedi: {ex.Message}");
         }
     }
 
@@ -140,11 +157,30 @@ public partial class MainViewModel : ObservableObject
         catch (Exception ex)
         {
             StatusText = $"Tarama hatası: {ex.Message}";
+            Debug.WriteLine($"[BSOD Doctor] Tarama hatası: {ex}");
         }
         finally
         {
             IsAnalyzing = false;
         }
+    }
+
+    /// <summary>
+    /// Tüm sonuç property'lerini varsayılana döndürür.
+    /// </summary>
+    private void ResetResultProperties()
+    {
+        HasResult = false;
+        ErrorCode = string.Empty;
+        ErrorName = string.Empty;
+        Description = string.Empty;
+        SolutionSteps = string.Empty;
+        KesinCozum = string.Empty;
+        CommonCauses = string.Empty;
+        RelatedKbUrls = string.Empty;
+        DumpFilePath = string.Empty;
+        Severity = 0;
+        IsResolved = false;
     }
 
     // ---- Bindable Properties ----
@@ -194,6 +230,10 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private bool _isDarkTheme;
 
+    // Versiyon
+    [ObservableProperty]
+    private string _versionText = string.Empty;
+
     // Geçmiş listesi
     public ObservableCollection<HistoryItem> HistoryItems { get; } = new();
 
@@ -214,19 +254,7 @@ public partial class MainViewModel : ObservableObject
     {
         if (IsAnalyzing) return;
 
-        // Önce ekranı temizle
-        HasResult = false;
-        ErrorCode = string.Empty;
-        ErrorName = string.Empty;
-        Description = string.Empty;
-        SolutionSteps = string.Empty;
-        KesinCozum = string.Empty;
-        CommonCauses = string.Empty;
-        RelatedKbUrls = string.Empty;
-        DumpFilePath = string.Empty;
-        Severity = 0;
-        IsResolved = false;
-
+        ResetResultProperties();
         await StartWatchScanAsync(scanAll: true);
     }
 
@@ -250,6 +278,7 @@ public partial class MainViewModel : ObservableObject
         catch (Exception ex)
         {
             StatusText = $"İşaretleme hatası: {ex.Message}";
+            Debug.WriteLine($"[BSOD Doctor] Çözüm işaretleme hatası: {ex}");
         }
     }
 
@@ -259,17 +288,7 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void ClearResult()
     {
-        HasResult = false;
-        ErrorCode = string.Empty;
-        ErrorName = string.Empty;
-        Description = string.Empty;
-        SolutionSteps = string.Empty;
-        KesinCozum = string.Empty;
-        CommonCauses = string.Empty;
-        RelatedKbUrls = string.Empty;
-        DumpFilePath = string.Empty;
-        Severity = 0;
-        IsResolved = false;
+        ResetResultProperties();
         _currentHistoryId = 0;
         StatusText = "Hazır";
     }
@@ -313,8 +332,9 @@ public partial class MainViewModel : ObservableObject
             RelatedKbUrls = bsodError?.RelatedKbUrls ?? string.Empty;
             Severity = bsodError?.Severity ?? 0;
         }
-        catch
+        catch (Exception ex)
         {
+            Debug.WriteLine($"[BSOD Doctor] Çözüm bilgisi alınamadı: {ex.Message}");
             Description = "Çözüm bilgisi alınamadı.";
             SolutionSteps = string.Empty;
             KesinCozum = string.Empty;
@@ -354,9 +374,10 @@ public partial class MainViewModel : ObservableObject
                 ApplyTheme();
             }
         }
-        catch
+        catch (Exception ex)
         {
             // Bozuk settings dosyası — sessizce geç, varsayılan tema kullanılsın
+            Debug.WriteLine($"[BSOD Doctor] Tema ayarı okunamadı: {ex.Message}");
         }
     }
 
@@ -382,9 +403,10 @@ public partial class MainViewModel : ObservableObject
             var json = JsonSerializer.Serialize(new AppSettings { IsDarkTheme = IsDarkTheme });
             File.WriteAllText(_settingsPath, json);
         }
-        catch
+        catch (Exception ex)
         {
             // Kayıt başarısız — sorun değil, tema bu oturumda çalışır
+            Debug.WriteLine($"[BSOD Doctor] Tema kaydedilemedi: {ex.Message}");
         }
     }
 }

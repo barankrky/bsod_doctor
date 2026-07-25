@@ -3,34 +3,25 @@ using BsodDoctor.Models;
 namespace BsodDoctor.Services;
 
 /// <summary>
-/// Yerel veritabanı (SQLite) işlemlerini yöneten arayüz.
+/// Veritabanı işlemleri için arayüz.
 /// </summary>
 public interface IDatabaseService
 {
-    /// <summary>BSOD hata koduna göre çözüm ara</summary>
-    Task<BsodError?> GetErrorByCodeAsync(string errorCode);
+    /// <summary>Veritabanını oluşturur ve seed data'yı import eder.</summary>
+    Task InitializeAsync(string? seedDataPath = null, CancellationToken cancellationToken = default);
 
-    /// <summary>Tüm BSOD hata kodlarını getir</summary>
-    Task<List<BsodError>> GetAllErrorsAsync();
+    /// <summary>Hata koduna göre BSOD kaydını getirir.</summary>
+    Task<BsodError?> FindErrorByCodeAsync(string errorCode, CancellationToken cancellationToken = default);
 
-    /// <summary>Kategoriye göre filtrele</summary>
-    Task<List<BsodError>> GetErrorsByCategoryAsync(string category);
+    /// <summary>Aynı hata kodu cooldown süresinde daha önce görüldü mü?</summary>
+    Task<bool> IsErrorInCooldownAsync(string errorCode, TimeSpan cooldown, CancellationToken cancellationToken = default);
 
-    /// <summary>Ciddiyet seviyesine göre filtrele</summary>
-    Task<List<BsodError>> GetErrorsBySeverityAsync(int minSeverity);
+    /// <summary>Analiz kaydını veritabanına ekler. HistoryId'yi döndürür.</summary>
+    Task<int> SaveAnalysisRecordAsync(AnalysisResult result, CancellationToken cancellationToken = default);
 
-    /// <summary>Hata kodunda veya adında arama yap</summary>
-    Task<List<BsodError>> SearchErrorsAsync(string query);
+    /// <summary>Analiz kaydını çözüldü olarak işaretler.</summary>
+    Task MarkAsResolvedAsync(int historyId, string? feedback = null, CancellationToken cancellationToken = default);
 
-    /// <summary>Analiz geçmişini kaydet</summary>
-    Task SaveAnalysisAsync(AnalysisResult result);
-
-    /// <summary>Analiz geçmişini getir</summary>
-    Task<List<AnalysisResult>> GetAnalysisHistoryAsync(int limit = 50);
-
-    /// <summary>Yeni bir BSOD hata kaydı ekle (A2A köprüsü ile)</summary>
-    Task InsertErrorAsync(BsodError error);
-
-    /// <summary>Mevcut kaydı güncelle</summary>
-    Task UpdateErrorAsync(BsodError error);
+    /// <summary>Geçmiş analiz kayıtlarını getirir.</summary>
+    Task<List<HistoryItem>> GetHistoryAsync(bool onlyUnresolved = true, CancellationToken cancellationToken = default);
 }
