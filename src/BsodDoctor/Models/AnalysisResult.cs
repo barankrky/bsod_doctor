@@ -25,4 +25,10 @@ public class AnalysisResult
     /// Çözüm bulundu mu?
     /// </summary>
     public bool HasSolution => !string.IsNullOrEmpty(SolutionSteps);
+
+    /// <summary>
+    /// Bu sonuç için Windows bildirimi (toast) daha önce gönderildi mi?
+    /// Service tarafından kullanılır — aynı hata için tekrar bildirim göndermemek için.
+    /// </summary>
+    public bool IsNotified { get; set; }
 }

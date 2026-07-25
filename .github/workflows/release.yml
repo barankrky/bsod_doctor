@@ -24,17 +24,19 @@ jobs:
 
     - name: Restore
       run: |
-        dotnet restore src/BsodDoctor/BsodDoctor.csproj
-        dotnet restore tests/BsodDoctor.Tests/BsodDoctor.Tests.csproj
+        dotnet restore bsod_doctor.slnx
 
-    - name: Build
-      run: dotnet build src/BsodDoctor/BsodDoctor.csproj -c Release --no-restore
+    - name: Build All
+      run: dotnet build bsod_doctor.slnx -c Release --no-restore
 
     - name: Test
       run: dotnet test tests/BsodDoctor.Tests/BsodDoctor.Tests.csproj --no-restore
 
-    - name: Publish
+    - name: Publish WPF App
       run: dotnet publish src/BsodDoctor/BsodDoctor.csproj -c Release --no-build -o publish
+
+    - name: Publish Windows Service
+      run: dotnet publish src/BsodDoctor.Service/BsodDoctor.Service.csproj -c Release --no-build -o publish-service
 
     - name: Install Inno Setup
       run: choco install innosetup --no-progress --confirm
