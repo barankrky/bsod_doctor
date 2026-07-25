@@ -5,8 +5,37 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Styles/ModernStyles.xaml" />
+                <ResourceDictionary Source="Resources/Themes/LightTheme.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+
+            <!-- Global stiller -->
+            <Style TargetType="DataGrid" x:Key="HistoryGridStyle">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Foreground" Value="{DynamicResource ThemeForeground}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorder}"/>
+                <Setter Property="RowBackground" Value="{DynamicResource CardHistoryBg}"/>
+                <Setter Property="AlternatingRowBackground" Value="{DynamicResource CardHistoryAlt}"/>
+                <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+                <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource ThemeBorder}"/>
+            </Style>
+
+            <Style TargetType="DataGridColumnHeader">
+                <Setter Property="Background" Value="{DynamicResource CardHistoryBg}"/>
+                <Setter Property="Foreground" Value="{DynamicResource ThemeForeground}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorder}"/>
+            </Style>
+
+            <Style TargetType="DataGridCell">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Foreground" Value="{DynamicResource ThemeForeground}"/>
+                <Setter Property="BorderBrush" Value="Transparent"/>
+                <Style.Triggers>
+                    <Trigger Property="IsSelected" Value="True">
+                        <Setter Property="Background" Value="{DynamicResource PrimaryButtonBg}"/>
+                        <Setter Property="Foreground" Value="White"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

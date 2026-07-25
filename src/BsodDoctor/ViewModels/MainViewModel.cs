@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using BsodDoctor.Models;
@@ -171,6 +172,10 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private bool _isResolved;
 
+    // Tema
+    [ObservableProperty]
+    private bool _isDarkTheme;
+
     // Geçmiş listesi
     public ObservableCollection<HistoryItem> HistoryItems { get; } = new();
 
@@ -301,5 +306,22 @@ public partial class MainViewModel : ObservableObject
         }
 
         StatusText = $"{item.ErrorName} — {item.DisplayTime}";
+    }
+
+    /// <summary>
+    /// Açık / Koyu tema arasında geçiş yapar.
+    /// </summary>
+    [RelayCommand]
+    private void ToggleTheme()
+    {
+        IsDarkTheme = !IsDarkTheme;
+
+        // App.xaml'deki MergedDictionary'i değiştir
+        var appResources = Application.Current.Resources.MergedDictionaries;
+        appResources.Clear();
+
+        var themeName = IsDarkTheme ? "DarkTheme.xaml" : "LightTheme.xaml";
+        var uri = new Uri($"Resources/Themes/{themeName}", UriKind.Relative);
+        appResources.Add(new ResourceDictionary { Source = uri });
     }
 }

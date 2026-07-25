@@ -7,7 +7,8 @@
         xmlns:local="clr-namespace:BsodDoctor"
         mc:Ignorable="d"
         Title="BSOD Doctor" Height="750" Width="1000"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource ThemeBackground}">
 
     <Window.DataContext>
         <vm:MainViewModel />
@@ -19,8 +20,8 @@
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
 
         <Style TargetType="Button" x:Key="PrimaryButton">
-            <Setter Property="Background" Value="#0078D4"/>
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="{DynamicResource PrimaryButtonBg}"/>
+            <Setter Property="Foreground" Value="{DynamicResource WhiteText}"/>
             <Setter Property="Padding" Value="16,8"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -28,14 +29,14 @@
             <Setter Property="Cursor" Value="Hand"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#106EBE"/>
+                    <Setter Property="Background" Value="{DynamicResource PrimaryButtonHoverBg}"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
 
         <Style TargetType="Button" x:Key="SuccessButton">
-            <Setter Property="Background" Value="#2E7D32"/>
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="{DynamicResource SuccessButtonBg}"/>
+            <Setter Property="Foreground" Value="{DynamicResource WhiteText}"/>
             <Setter Property="Padding" Value="16,8"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -43,14 +44,14 @@
             <Setter Property="Cursor" Value="Hand"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#1B5E20"/>
+                    <Setter Property="Background" Value="{DynamicResource SuccessButtonHoverBg}"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
 
         <Style TargetType="Button" x:Key="SecondaryButton">
-            <Setter Property="Background" Value="#757575"/>
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="{DynamicResource SecondaryButtonBg}"/>
+            <Setter Property="Foreground" Value="{DynamicResource WhiteText}"/>
             <Setter Property="Padding" Value="16,8"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -58,7 +59,7 @@
             <Setter Property="Cursor" Value="Hand"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#616161"/>
+                    <Setter Property="Background" Value="{DynamicResource SecondaryButtonHoverBg}"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -67,7 +68,7 @@
             <Setter Property="FontSize" Value="15"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Margin" Value="0,12,0,4"/>
-            <Setter Property="Foreground" Value="#1A1A1A"/>
+            <Setter Property="Foreground" Value="{DynamicResource ThemeForeground}"/>
         </Style>
     </Window.Resources>
 
@@ -83,9 +84,9 @@
 
         <!-- Başlık -->
         <StackPanel Grid.Row="0" Margin="0,0,0,8">
-            <TextBlock Text="BSOD Doctor" FontSize="28" FontWeight="Bold" Foreground="#D32F2F"/>
-            <TextBlock Text="Mavi Ekran Hatalarına Hızlı Çözüm" FontSize="13" Foreground="#666666"/>
-            <Separator Margin="0,6,0,0"/>
+            <TextBlock Text="BSOD Doctor" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource TitleForeground}"/>
+            <TextBlock Text="Mavi Ekran Hatalarına Hızlı Çözüm" FontSize="13" Foreground="{DynamicResource ThemeMuted}"/>
+            <Separator Margin="0,6,0,0" Background="{DynamicResource ThemeSeparator}"/>
         </StackPanel>
 
         <!-- Aksiyon Butonları -->
@@ -103,8 +104,13 @@
                     Style="{StaticResource SecondaryButton}"
                     IsEnabled="{Binding HasResult}"/>
 
-            <Border Background="#FFF3E0" Padding="12,6" CornerRadius="4" Margin="12,4,0,4" MinWidth="200">
-                <TextBlock Text="{Binding StatusText}" VerticalAlignment="Center" TextWrapping="Wrap"/>
+            <Button Content="🌙 Tema"
+                    Command="{Binding ToggleThemeCommand}"
+                    Style="{StaticResource SecondaryButton}"/>
+
+            <Border Background="{DynamicResource CardWarning}" Padding="12,6" CornerRadius="4" Margin="12,4,0,4" MinWidth="200">
+                <TextBlock Text="{Binding StatusText}" VerticalAlignment="Center" TextWrapping="Wrap"
+                           Foreground="{DynamicResource ThemeForeground}"/>
             </Border>
         </StackPanel>
 
@@ -116,77 +122,86 @@
                 <StackPanel>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="Hata Kodu" Style="{StaticResource SectionTitle}"/>
-                        <Border Background="#FFCDD2" Padding="6,2" CornerRadius="3" Margin="12,12,0,4">
-                            <TextBlock FontSize="12" FontWeight="SemiBold">
+                        <Border Background="{DynamicResource CardSeverity}" Padding="6,2" CornerRadius="3" Margin="12,12,0,4">
+                            <TextBlock FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource ThemeForeground}">
                                 <Run Text="Ciddiyet: "/>
                                 <Run Text="{Binding Severity}"/><Run Text="/5"/>
                             </TextBlock>
                         </Border>
                     </StackPanel>
 
-                    <Border Background="#FFF3E0" Padding="12" CornerRadius="4">
-                        <TextBlock Text="{Binding ErrorCode}" FontSize="20" FontFamily="Consolas" FontWeight="Bold"/>
+                    <Border Background="{DynamicResource CardCode}" Padding="12" CornerRadius="4">
+                        <TextBlock Text="{Binding ErrorCode}" FontSize="20" FontFamily="Consolas" FontWeight="Bold"
+                                   Foreground="{DynamicResource ThemeForeground}"/>
                     </Border>
 
                     <!-- Hata Adı -->
                     <TextBlock Text="Hata Adı" Style="{StaticResource SectionTitle}"/>
-                    <Border Background="#E3F2FD" Padding="12" CornerRadius="4">
-                        <TextBlock Text="{Binding ErrorName}" FontSize="16" FontWeight="SemiBold"/>
+                    <Border Background="{DynamicResource CardName}" Padding="12" CornerRadius="4">
+                        <TextBlock Text="{Binding ErrorName}" FontSize="16" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource ThemeForeground}"/>
                     </Border>
 
                     <!-- Açıklama -->
                     <TextBlock Text="Açıklama" Style="{StaticResource SectionTitle}"/>
-                    <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Margin="0,0,0,4"/>
+                    <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Margin="0,0,0,4"
+                               Foreground="{DynamicResource ThemeForeground}"/>
 
                     <!-- Yaygın Nedenler -->
                     <TextBlock Text="Yaygın Nedenler" Style="{StaticResource SectionTitle}"/>
-                    <Border Background="#FFF8E1" Padding="12" CornerRadius="4" Margin="0,0,0,8">
-                        <TextBlock Text="{Binding CommonCauses}" TextWrapping="Wrap"/>
+                    <Border Background="{DynamicResource CardCauses}" Padding="12" CornerRadius="4" Margin="0,0,0,8">
+                        <TextBlock Text="{Binding CommonCauses}" TextWrapping="Wrap"
+                                   Foreground="{DynamicResource ThemeForeground}"/>
                     </Border>
 
                     <!-- Çözüm Adımları -->
                     <TextBlock Text="Çözüm Adımları" Style="{StaticResource SectionTitle}"/>
-                    <Border Background="#E8F5E9" Padding="12" CornerRadius="4">
-                        <TextBlock Text="{Binding SolutionSteps}" TextWrapping="Wrap"/>
+                    <Border Background="{DynamicResource CardSolution}" Padding="12" CornerRadius="4">
+                        <TextBlock Text="{Binding SolutionSteps}" TextWrapping="Wrap"
+                                   Foreground="{DynamicResource ThemeForeground}"/>
                     </Border>
 
                     <!-- Kesin Çözüm -->
                     <TextBlock Text="⭐ Kesin Çözüm" Style="{StaticResource SectionTitle}"/>
-                    <Border Background="#E8F5E9" Padding="12" CornerRadius="4" Margin="0,0,0,8">
-                        <TextBlock Text="{Binding KesinCozum}" TextWrapping="Wrap" FontWeight="SemiBold"/>
+                    <Border Background="{DynamicResource CardSolution}" Padding="12" CornerRadius="4" Margin="0,0,0,8">
+                        <TextBlock Text="{Binding KesinCozum}" TextWrapping="Wrap" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource ThemeForeground}"/>
                     </Border>
 
                     <!-- İlgili Linkler -->
                     <TextBlock Text="İlgili Bağlantılar" Style="{StaticResource SectionTitle}"
                                Visibility="{Binding HasRelatedKbUrls, Converter={StaticResource BoolToVisibility}}"/>
-                    <TextBlock Text="{Binding RelatedKbUrls}" TextWrapping="Wrap" FontSize="12" Foreground="#1565C0"
+                    <TextBlock Text="{Binding RelatedKbUrls}" TextWrapping="Wrap" FontSize="12"
+                               Foreground="{DynamicResource LinkForeground}"
                                Visibility="{Binding HasRelatedKbUrls, Converter={StaticResource BoolToVisibility}}"/>
 
                     <!-- Dosya Yolu -->
                     <TextBlock Text="Kaynak Dosya" Style="{StaticResource SectionTitle}"
                                Visibility="{Binding HasDumpFilePath, Converter={StaticResource BoolToVisibility}}"/>
-                    <TextBlock Text="{Binding DumpFilePath}" FontSize="11" FontFamily="Consolas" Foreground="#888"
+                    <TextBlock Text="{Binding DumpFilePath}" FontSize="11" FontFamily="Consolas"
+                               Foreground="{DynamicResource ThemeLightMuted}"
                                Visibility="{Binding HasDumpFilePath, Converter={StaticResource BoolToVisibility}}"/>
 
                     <!-- Çözüldü Onayı -->
-                    <Border Background="#E8F5E9" Padding="12" CornerRadius="4" Margin="0,12,0,0"
+                    <Border Background="{DynamicResource CardResolved}" Padding="12" CornerRadius="4" Margin="0,12,0,0"
                             Visibility="{Binding IsResolved, Converter={StaticResource BoolToVisibility}}">
-                        <TextBlock Text="✅ Bu hata çözüldü olarak işaretlendi." FontWeight="SemiBold" Foreground="#2E7D32"/>
+                        <TextBlock Text="✅ Bu hata çözüldü olarak işaretlendi." FontWeight="SemiBold"
+                                   Foreground="{DynamicResource ResolvedText}"/>
                     </Border>
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>
 
         <!-- Loading -->
-        <Border Grid.Row="3" Background="#F5F5F5" Padding="8" CornerRadius="4"
+        <Border Grid.Row="3" Background="{DynamicResource CardLoading}" Padding="8" CornerRadius="4"
                 Visibility="{Binding IsAnalyzing, Converter={StaticResource BoolToVisibility}}">
             <TextBlock Text="Minidump taranıyor..." 
-                       HorizontalAlignment="Center" Foreground="#666"/>
+                       HorizontalAlignment="Center" Foreground="{DynamicResource ThemeMuted}"/>
         </Border>
 
         <!-- Geçmiş Analizler -->
-        <Border Grid.Row="4" Background="#FAFAFA" CornerRadius="6" Padding="8" Margin="0,8,0,4"
-                BorderBrush="#E0E0E0" BorderThickness="1">
+        <Border Grid.Row="4" Background="{DynamicResource CardHistoryBg}" CornerRadius="6" Padding="8" Margin="0,8,0,4"
+                BorderBrush="{DynamicResource ThemeBorder}" BorderThickness="1">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -195,7 +210,8 @@
 
                 <!-- Geçmiş Başlık -->
                 <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
-                    <TextBlock Text="📋 Geçmiş Analizler" FontSize="14" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <TextBlock Text="📋 Geçmiş Analizler" FontSize="14" FontWeight="Bold" VerticalAlignment="Center"
+                               Foreground="{DynamicResource ThemeForeground}"/>
                     <Button Content="🔄 Yenile"
                             Command="{Binding RefreshHistoryListCommand}"
                             Style="{StaticResource SecondaryButton}"
@@ -214,7 +230,8 @@
                           FontSize="12"
                           BorderThickness="0"
                           Background="Transparent"
-                          AlternatingRowBackground="#F0F0F0">
+                          Foreground="{DynamicResource ThemeForeground}"
+                          AlternatingRowBackground="{DynamicResource CardHistoryAlt}">
 
                     <DataGrid.InputBindings>
                         <MouseBinding Gesture="LeftDoubleClick"
@@ -234,6 +251,6 @@
 
         <!-- Alt Bilgi -->
         <TextBlock Grid.Row="5" Text="v0.3.0 — BSOD Doctor — Watch Service" 
-                   FontSize="11" Foreground="#999" HorizontalAlignment="Right"/>
+                   FontSize="11" Foreground="{DynamicResource ThemeLightMuted}" HorizontalAlignment="Right"/>
     </Grid>
 </Window>
