@@ -65,37 +65,68 @@ public static class MinidumpReader
     /// <summary>
     /// PAGEDUMP (PAGEDU64/PAGEDU32) formatından BugCheckCode okur.
     /// _DMP_HEADER64 / _DMP_HEADER yapısını kullanır.
+    /// PAGEDU64'te BugCheckCode offset 0x38, PAGEDU32'de offset 0x24'tedir.
     /// </summary>
     private static (string? ErrorCode, string? ErrorMessage) ReadPageDumpBugCheck(BinaryReader reader, FileInfo fileInfo)
     {
         // Offset 0x04: ValidDump (4 bytes) - "DU64" veya "DU32"
         var validDump = reader.ReadBytes(4);
         var versionStr = System.Text.Encoding.ASCII.GetString(validDump);
-        
+        var is64Bit = versionStr == "DU64";
+
         // Offset 0x08: MajorVersion
         /* uint majorVersion = */ reader.ReadUInt32();
         // Offset 0x0C: MinorVersion
         /* uint minorVersion = */ reader.ReadUInt32();
-        // Offset 0x10: DirectoryTableBase 
-        /* ulong dtb = */ reader.ReadUInt64();
-        // Offset 0x18: PfnDataBase
-        /* ulong pfn = */ reader.ReadUInt64();
-        // Offset 0x20: PsLoadedModuleList
-        /* ulong loaded = */ reader.ReadUInt64();
-        // Offset 0x28: PsActiveProcessHead
-        /* ulong active = */ reader.ReadUInt64();
-        // Offset 0x30: MachineImageType
-        /* uint imageType = */ reader.ReadUInt32();
-        // Offset 0x34: NumberProcessors
-        /* uint numCpu = */ reader.ReadUInt32();
 
-        // Offset 0x38: BugCheckCode
-        if (fileInfo.Length < 0x3C)
-            return (null, "PAGEDUMP başlığı çok kısa.");
+        if (is64Bit)
+        {
+            // PAGEDU64 (_DMP_HEADER64): 8-byte pointer fields
+            // Offset 0x10: DirectoryTableBase
+            /* ulong dtb = */ reader.ReadUInt64();
+            // Offset 0x18: PfnDataBase
+            /* ulong pfn = */ reader.ReadUInt64();
+            // Offset 0x20: PsLoadedModuleList
+            /* ulong loaded = */ reader.ReadUInt64();
+            // Offset 0x28: PsActiveProcessHead
+            /* ulong active = */ reader.ReadUInt64();
+            // Offset 0x30: MachineImageType
+            /* uint imageType = */ reader.ReadUInt32();
+            // Offset 0x34: NumberProcessors
+            /* uint numCpu = */ reader.ReadUInt32();
 
-        var bugCheckCode = reader.ReadUInt32();
-        var formattedCode = $"0x{bugCheckCode:X8}";
-        return (formattedCode, null);
+            // Offset 0x38: BugCheckCode
+            if (fileInfo.Length < 0x3C)
+                return (null, "PAGEDUMP64 başlığı çok kısa.");
+
+            var bugCheckCode = reader.ReadUInt32();
+            var formattedCode = $"0x{bugCheckCode:X8}";
+            return (formattedCode, null);
+        }
+        else
+        {
+            // PAGEDU32 (_DMP_HEADER): 4-byte pointer fields
+            // Offset 0x10: DirectoryTableBase
+            /* uint dtb = */ reader.ReadUInt32();
+            // Offset 0x14: PfnDataBase
+            /* uint pfn = */ reader.ReadUInt32();
+            // Offset 0x18: PsLoadedModuleList
+            /* uint loaded = */ reader.ReadUInt32();
+            // Offset 0x1C: PsActiveProcessHead
+            /* uint active = */ reader.ReadUInt32();
+            // Offset 0x20: MachineImageType
+            /* uint imageType = */ reader.ReadUInt32();
+            // Offset 0x24: NumberProcessors
+            /* uint numCpu = */ reader.ReadUInt32();
+
+            // Offset 0x28: BugCheckCode
+            if (fileInfo.Length < 0x2C)
+                return (null, "PAGEDUMP32 başlığı çok kısa.");
+
+            var bugCheckCode = reader.ReadUInt32();
+            var formattedCode = $"0x{bugCheckCode:X8}";
+            return (formattedCode, null);
+        }
     }
 
     /// <summary>

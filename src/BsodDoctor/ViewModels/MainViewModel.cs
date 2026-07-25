@@ -34,14 +34,21 @@ public partial class MainViewModel : ObservableObject
         _settingsPath = Path.Combine(dataDir, "settings.json");
 
         var dbPath = Path.Combine(dataDir, "bsod_errors.db");
-        var seedPath = Path.Combine(baseDir, "..", "..", "..", "..", "..", "database", "seed_data.json");
 
-        // Alternatif seed path (çalışma dizinine göre)
+        // Seed data yolu — öncelik sırası:
+        // 1) Yayınlanmış / kurulmuş uygulamada baseDir/database/seed_data.json
+        // 2) Geliştirme ortamında repo kökü (bin/Debug/net10.0-windows/../../../../../database/seed_data.json)
+        // 3) Çalışma dizinine göre (dotnet run kök dizinde)
+        var seedPath = Path.Combine(baseDir, "database", "seed_data.json");
         if (!File.Exists(seedPath))
         {
-            var cwdSeed = Path.Combine(Environment.CurrentDirectory, "database", "seed_data.json");
-            if (File.Exists(cwdSeed))
-                seedPath = cwdSeed;
+            seedPath = Path.Combine(baseDir, "..", "..", "..", "..", "..", "database", "seed_data.json");
+            if (!File.Exists(seedPath))
+            {
+                var cwdSeed = Path.Combine(Environment.CurrentDirectory, "database", "seed_data.json");
+                if (File.Exists(cwdSeed))
+                    seedPath = cwdSeed;
+            }
         }
 
         _databaseService = new DatabaseService(dbPath);

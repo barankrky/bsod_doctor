@@ -15,4 +15,11 @@
     <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.53.3" />
   </ItemGroup>
 
+  <!-- Seed data dosyasını build/publish çıktısına kopyala -->
+  <ItemGroup>
+    <Content Include="..\..\database\seed_data.json" Link="database\seed_data.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
