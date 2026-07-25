@@ -47,20 +47,6 @@ bsod_doctor/
 
 ---
 
-## 🧪 Test
-
-```bash
-dotnet run --project tests/BsodDoctor.Tests
-```
-
----
-
-## 🔄 CI/CD
-
-Her `master` push'unda: derleme → test → publish → InnoSetup paketi → GitHub Release (prerelease).
-
----
-
 ## 📄 Lisans
 
 MIT
