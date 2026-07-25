@@ -166,9 +166,14 @@
                     <!-- İlgili Linkler -->
                     <TextBlock Text="İlgili Bağlantılar" Style="{StaticResource SectionTitle}"
                                Visibility="{Binding HasRelatedKbUrls, Converter={StaticResource BoolToVisibility}}"/>
-                    <TextBlock Text="{Binding RelatedKbUrls}" TextWrapping="Wrap" FontSize="12"
-                               Foreground="{DynamicResource LinkForeground}"
-                               Visibility="{Binding HasRelatedKbUrls, Converter={StaticResource BoolToVisibility}}"/>
+                    <TextBlock TextWrapping="Wrap" FontSize="12"
+                               Visibility="{Binding HasRelatedKbUrls, Converter={StaticResource BoolToVisibility}}">
+                        <Hyperlink NavigateUri="{Binding RelatedKbUrls}"
+                                   RequestNavigate="Hyperlink_RequestNavigate"
+                                   Foreground="{DynamicResource LinkForeground}">
+                            <Run Text="{Binding RelatedKbUrls}"/>
+                        </Hyperlink>
+                    </TextBlock>
 
                     <!-- Dosya Yolu -->
                     <TextBlock Text="Kaynak Dosya" Style="{StaticResource SectionTitle}"
