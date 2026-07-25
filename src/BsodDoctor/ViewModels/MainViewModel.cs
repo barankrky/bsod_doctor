@@ -259,7 +259,7 @@ public partial class MainViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Bulunan hatayı "çözüldü" olarak işaretler.
+    /// Bulunan hatayı "çözüldü" olarak işaretler ve dump dosyasını siler.
     /// </summary>
     [RelayCommand]
     private async Task MarkResolvedAsync()
@@ -268,9 +268,12 @@ public partial class MainViewModel : ObservableObject
 
         try
         {
-            await _databaseService.MarkAsResolvedAsync(_currentHistoryId, "Kullanıcı tarafından çözüldü olarak işaretlendi.");
+            // Önce dump dosyasını sil (tekrar karşına çıkmaması için)
+            DeleteDumpFile();
+
+            await _databaseService.MarkAsResolvedAsync(_currentHistoryId, "Kullanıcı tarafından çözüldü olarak işaretlendi ve dump dosyası silindi.");
             IsResolved = true;
-            StatusText = "Hata çözüldü olarak işaretlendi.";
+            StatusText = "Hata çözüldü olarak işaretlendi ve dump dosyası silindi.";
 
             // Geçmiş listesini yenile (çözüldü işaretlenen kayıt artık listeden kaybolur)
             await RefreshHistoryAsync();
@@ -279,6 +282,28 @@ public partial class MainViewModel : ObservableObject
         {
             StatusText = $"İşaretleme hatası: {ex.Message}";
             Debug.WriteLine($"[BSOD Doctor] Çözüm işaretleme hatası: {ex}");
+        }
+    }
+
+    /// <summary>
+    /// Mevcut hata için dump dosyasını siler (tekrar taranmaması için).
+    /// </summary>
+    private void DeleteDumpFile()
+    {
+        if (string.IsNullOrEmpty(DumpFilePath)) return;
+
+        try
+        {
+            if (File.Exists(DumpFilePath))
+            {
+                File.Delete(DumpFilePath);
+                Debug.WriteLine($"[BSOD Doctor] Dump dosyası silindi: {DumpFilePath}");
+            }
+        }
+        catch (Exception ex)
+        {
+            // Dosya silinemezse (izin yok, kilitli vs.) uygulama devam etsin
+            Debug.WriteLine($"[BSOD Doctor] Dump dosyası silinemedi: {ex.Message}");
         }
     }
 
