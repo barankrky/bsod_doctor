@@ -1,15 +1,32 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- MinidumpReader direkt compile edilir -->
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="xunit" Version="2.8.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.1" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.10" />
+  </ItemGroup>
+
+  <!-- MinidumpReader + DatabaseService + Models source files (no WPF dep, net10.0-safe) -->
+  <ItemGroup>
     <Compile Include="..\..\src\BsodDoctor\Services\MinidumpReader.cs" />
+    <Compile Include="..\..\src\BsodDoctor\Services\DatabaseService.cs" />
+    <Compile Include="..\..\src\BsodDoctor\Models\*.cs" />
+  </ItemGroup>
+
+  <!-- Synthetic dump for MinidumpReader tests -->
+  <ItemGroup>
+    <Content Include="TestData\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>
