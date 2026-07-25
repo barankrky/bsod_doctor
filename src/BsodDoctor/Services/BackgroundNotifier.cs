@@ -4,8 +4,7 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 
 #if REAL_WINDOWS
-using Windows.Data.Xml.Dom;
-using Windows.UI.Notifications;
+using Microsoft.Toolkit.Uwp.Notifications;
 #endif
 
 namespace BsodDoctor.Services;
@@ -14,8 +13,9 @@ namespace BsodDoctor.Services;
 /// WPF uygulamasının --notify modunda kullandığı bildirim yöneticisi.
 /// Pending notification marker'larını okur, Windows Toast Notification gösterir.
 ///
-/// NOT: Toast notification API'leri (WinRT) sadece Windows build'lerinde kullanılabilir.
-/// Linux'ta build edilirken bu kod conditionally compile edilir.
+/// NOT: Toast notification API'leri (DesktopNotificationManagerCompat) sadece
+/// Windows build'lerinde kullanılabilir. Linux'ta build edilirken bu kod
+/// #if REAL_WINDOWS ile korunur ve stub derlenir.
 /// </summary>
 public class BackgroundNotifier
 {
@@ -51,6 +51,12 @@ public class BackgroundNotifier
 
             Debug.WriteLine($"[BackgroundNotifier] {pendingFiles.Length} bekleyen bildirim bulundu.");
 
+#if REAL_WINDOWS
+            // DesktopNotificationManagerCompat'i başlat (AUMID kayıtlı olmalı)
+            DesktopNotificationManagerCompat.RegisterAumidAndComServer<NotificationActivator>(AUMID);
+            DesktopNotificationManagerCompat.RegisterActivator<NotificationActivator>();
+#endif
+
             foreach (var file in pendingFiles)
             {
                 try
@@ -82,31 +88,20 @@ public class BackgroundNotifier
 
 #if REAL_WINDOWS
     /// <summary>
-    /// Windows Toast Notification gösterir.
+    /// Windows Toast Notification gösterir (DesktopNotificationManagerCompat ile).
     /// Sadece Windows build'lerinde derlenir.
     /// </summary>
     private static void ShowToast(PendingNotification notification)
     {
-        var toastXml = $"""
-            <toast activationType="foreground" launch="--open-error={notification.ErrorCode}">
-                <visual>
-                    <binding template="ToastGeneric">
-                        <text>🚨 Yeni BSOD Tespit Edildi</text>
-                        <text>{notification.ErrorCode} — {notification.ErrorName}</text>
-                        <text>Ciddiyet: {notification.Severity}/5</text>
-                    </binding>
-                </visual>
-                <actions>
-                    <action content="🔍 BSOD Doctor'u Aç" arguments="--open-error={notification.ErrorCode}" activationType="foreground"/>
-                </actions>
-            </toast>
-            """;
+        var toast = new ToastContentBuilder()
+            .AddText("🚨 Yeni BSOD Tespit Edildi")
+            .AddText($"{notification.ErrorCode} — {notification.ErrorName}")
+            .AddText($"Ciddiyet: {notification.Severity}/5")
+            .AddArgument("action", "openError")
+            .AddArgument("errorCode", notification.ErrorCode)
+            .GetToastContent();
 
-        var doc = new XmlDocument();
-        doc.LoadXml(toastXml);
-
-        var toast = new ToastNotification(doc);
-        var notifier = ToastNotificationManager.CreateToastNotifier(AUMID);
+        var notifier = DesktopNotificationManagerCompat.CreateToastNotifier();
         notifier.Show(toast);
 
         Debug.WriteLine($"[BackgroundNotifier] Bildirim gösterildi: {notification.ErrorCode}");
@@ -130,19 +125,15 @@ public class BackgroundNotifier
 /// Setup sırasında CLSID registry'ye kaydedilir.
 /// Kullanıcı bildirime tıklayınca ana BSOD Doctor uygulamasını başlatır.
 ///
-/// NOT: COM activator sadece Windows'ta çalışır. Linux build'lerinde
-/// COMVisible attribute'ları ve CLSID kaydı yok sayılır.
+/// Bu sınıf sadece Windows build'lerinde derlenir.
 /// </summary>
-[ComVisible(true)]
+#if REAL_WINDOWS
 [ClassInterface(ClassInterfaceType.None)]
+[ComVisible(true)]
 [Guid("B5E7F3A1-2C4D-4A8F-9E6B-1D3C5F7A9B0E")]
-public class NotificationActivator : INotificationActivationCallback
+public class NotificationActivator : DesktopNotificationManagerCompat.INotificationActivationCallback
 {
-    public void Activate(
-        [In, MarshalAs(UnmanagedType.LPWStr)] string appUserModelId,
-        [In, MarshalAs(UnmanagedType.LPWStr)] string invokedArgs,
-        [In, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 3)] NOTIFICATION_USER_INPUT_DATA[]? data,
-        [In, MarshalAs(UnmanagedType.U4)] uint dataCount)
+    public void OnActivated(string invokedArgs, NotificationUserInput userInput, string appUserModelId)
     {
         var exePath = Process.GetCurrentProcess().MainModule?.FileName ?? "BsodDoctor.exe";
 
@@ -161,35 +152,7 @@ public class NotificationActivator : INotificationActivationCallback
         }
     }
 }
-
-/// <summary>
-/// INotificationActivationCallback COM arabirimi — Windows Shell API'si.
-/// Desktop apps için toast tıklama aktivasyonunu yönetir.
-/// </summary>
-[ComImport]
-[Guid("25A45B09-1AD4-40B6-83A3-6A149F4FE0E7")]
-[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-public interface INotificationActivationCallback
-{
-    void Activate(
-        [In, MarshalAs(UnmanagedType.LPWStr)] string appUserModelId,
-        [In, MarshalAs(UnmanagedType.LPWStr)] string invokedArgs,
-        [In, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 3)] NOTIFICATION_USER_INPUT_DATA[]? data,
-        [In, MarshalAs(UnmanagedType.U4)] uint dataCount);
-}
-
-/// <summary>
-/// Toast notification'dan gelen kullanıcı girdi verisi yapısı.
-/// </summary>
-[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-public struct NOTIFICATION_USER_INPUT_DATA
-{
-    [MarshalAs(UnmanagedType.LPWStr)]
-    public string Key;
-
-    [MarshalAs(UnmanagedType.LPWStr)]
-    public string Value;
-}
+#endif
 
 #endregion
 
