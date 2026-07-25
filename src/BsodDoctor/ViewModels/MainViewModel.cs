@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Text.Json;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -10,20 +11,27 @@ namespace BsodDoctor.ViewModels;
 
 /// <summary>
 /// Ana pencere için ViewModel.
-/// Uygulama açılırken BsodWatchService ile minidump taraması yapar.
 /// </summary>
 public partial class MainViewModel : ObservableObject
 {
     private readonly DatabaseService _databaseService;
     private readonly BsodWatchService _watchService;
+    private readonly string _settingsPath;
 
     private int _currentHistoryId;
+
+    private record AppSettings
+    {
+        public bool IsDarkTheme { get; init; }
+    }
 
     public MainViewModel()
     {
         var baseDir = AppDomain.CurrentDomain.BaseDirectory;
         var dataDir = Path.Combine(baseDir, "Data");
         Directory.CreateDirectory(dataDir);
+
+        _settingsPath = Path.Combine(dataDir, "settings.json");
 
         var dbPath = Path.Combine(dataDir, "bsod_errors.db");
         var seedPath = Path.Combine(baseDir, "..", "..", "..", "..", "..", "database", "seed_data.json");
@@ -45,6 +53,9 @@ public partial class MainViewModel : ObservableObject
 
     private async Task InitializeAsync(string seedPath)
     {
+        // Kayıtlı tema tercihini yükle ve uygula
+        LoadAndApplyTheme();
+
         try
         {
             await _databaseService.InitializeAsync(seedPath);
@@ -309,19 +320,64 @@ public partial class MainViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Açık / Koyu tema arasında geçiş yapar.
+    /// Açık / Koyu tema arasında geçiş yapar ve tercihi kaydeder.
     /// </summary>
     [RelayCommand]
     private void ToggleTheme()
     {
         IsDarkTheme = !IsDarkTheme;
+        ApplyTheme();
+        SaveSettings();
+    }
 
-        // App.xaml'deki MergedDictionary'i değiştir
+    /// <summary>
+    /// Kayıtlı tema tercihini settings.json'dan okur ve uygular.
+    /// </summary>
+    private void LoadAndApplyTheme()
+    {
+        if (!File.Exists(_settingsPath)) return;
+
+        try
+        {
+            var json = File.ReadAllText(_settingsPath);
+            var settings = JsonSerializer.Deserialize<AppSettings>(json);
+            if (settings?.IsDarkTheme == true)
+            {
+                IsDarkTheme = true;
+                ApplyTheme();
+            }
+        }
+        catch
+        {
+            // Bozuk settings dosyası — sessizce geç, varsayılan tema kullanılsın
+        }
+    }
+
+    /// <summary>
+    /// Tema ResourceDictionary'ini değiştirir.
+    /// </summary>
+    private void ApplyTheme()
+    {
+        var themeName = IsDarkTheme ? "DarkTheme.xaml" : "LightTheme.xaml";
         var appResources = Application.Current.Resources.MergedDictionaries;
         appResources.Clear();
-
-        var themeName = IsDarkTheme ? "DarkTheme.xaml" : "LightTheme.xaml";
         var uri = new Uri($"Resources/Themes/{themeName}", UriKind.Relative);
         appResources.Add(new ResourceDictionary { Source = uri });
+    }
+
+    /// <summary>
+    /// Tema tercihini settings.json'a kaydeder.
+    /// </summary>
+    private void SaveSettings()
+    {
+        try
+        {
+            var json = JsonSerializer.Serialize(new AppSettings { IsDarkTheme = IsDarkTheme });
+            File.WriteAllText(_settingsPath, json);
+        }
+        catch
+        {
+            // Kayıt başarısız — sorun değil, tema bu oturumda çalışır
+        }
     }
 }
