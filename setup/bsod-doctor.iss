@@ -1,8 +1,15 @@
 ; BSOD Doctor — Inno Setup Script
-; Derleme: ISCC setup\bsod-doctor.iss
+; Derleme: iscc /dMyAppVersion="0.1-beta.X" /dMyAppBuildNumber=X setup\bsod-doctor.iss
+
+#ifndef MyAppVersion
+  #define MyAppVersion "0.1-beta"
+#endif
+
+#ifndef MyAppBuildNumber
+  #define MyAppBuildNumber "0"
+#endif
 
 #define MyAppName "BSOD Doctor"
-#define MyAppVersion "1.0.0"
 #define MyAppPublisher "NextroByte"
 #define MyAppURL "https://github.com/burakdmrbkr/bsod_doctor"
 #define MyAppExeName "BsodDoctor.exe"
@@ -19,13 +26,13 @@ DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 OutputDir=..\artifacts
-OutputBaseFilename=BSOD-Doctor-v{#MyAppVersion}-setup
+OutputBaseFilename=BSOD-Doctor-{#MyAppVersion}-setup
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
 PrivilegesRequired=admin
 UninstallDisplayIcon={app}\{#MyAppExeName}
-VersionInfoVersion={#MyAppVersion}.0
+VersionInfoVersion=0.1.0.{#MyAppBuildNumber}
 VersionInfoCompany={#MyAppPublisher}
 VersionInfoDescription={#MyAppName}
 ShowLanguageDialog=no
