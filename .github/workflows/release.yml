@@ -42,12 +42,34 @@ jobs:
     - name: Build Installer
       run: iscc /dMyAppVersion="$env:APP_VERSION" /dMyAppBuildNumber="${{ github.run_number }}" setup\bsod-doctor.iss
 
+    - name: Generate Changelog
+      shell: pwsh
+      run: |
+        # Önceki release etiketini bul
+        $prevTag = git describe --tags --abbrev=0 2>$null
+        if ($prevTag) {
+          Write-Host "Previous tag: $prevTag"
+          $commits = git log "$prevTag..HEAD" --format="* %s (%h)" --no-decorate
+          $header = "## 📋 Değişiklik Listesi ($prevTag → v$env:APP_VERSION)`n"
+        } else {
+          Write-Host "No previous tag, using all commits"
+          $commits = git log --format="* %s (%h)" --no-decorate
+          $header = "## 📋 Değişiklik Listesi (v$env:APP_VERSION - ilk derleme)`n"
+        }
+        if (-not $commits) {
+          $commits = @("* Değişiklik bulunamadı")
+        }
+        $changelog = "$header`n$($commits -join "`n")`n"
+        Set-Content -Path "release_changelog.md" -Value $changelog
+        Write-Host "Changelog generated:"
+        Get-Content "release_changelog.md"
+
     - name: Create GitHub Release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         gh release create "v$env:APP_VERSION" `
           --title "BSOD Doctor Beta v$env:APP_VERSION" `
-          --notes "Otomatik beta derlemesi. En son master branch'inden derlenmistir." `
+          --notes-file release_changelog.md `
           --prerelease `
           "artifacts\BSOD-Doctor-$env:APP_VERSION-setup.exe"
