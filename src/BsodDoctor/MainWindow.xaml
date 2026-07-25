@@ -6,7 +6,7 @@
         xmlns:vm="clr-namespace:BsodDoctor.ViewModels"
         xmlns:local="clr-namespace:BsodDoctor"
         mc:Ignorable="d"
-        Title="BSOD Doctor" Height="700" Width="950"
+        Title="BSOD Doctor" Height="750" Width="1000"
         WindowStartupLocation="CenterScreen">
 
     <Window.DataContext>
@@ -73,10 +73,12 @@
 
     <Grid Margin="16">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>      <!-- Başlık -->
+            <RowDefinition Height="Auto"/>      <!-- Butonlar -->
+            <RowDefinition Height="2*"/>        <!-- Detay -->
+            <RowDefinition Height="Auto"/>      <!-- Loading -->
+            <RowDefinition Height="1*"/>        <!-- Geçmiş -->
+            <RowDefinition Height="Auto"/>      <!-- Footer -->
         </Grid.RowDefinitions>
 
         <!-- Başlık -->
@@ -106,7 +108,7 @@
             </Border>
         </StackPanel>
 
-        <!-- Sonuç Alanı -->
+        <!-- Detay Alanı -->
         <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
             <StackPanel Visibility="{Binding HasResult, Converter={StaticResource BoolToVisibility}}">
 
@@ -114,7 +116,6 @@
                 <StackPanel>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="Hata Kodu" Style="{StaticResource SectionTitle}"/>
-                        <!-- Severity göstergesi -->
                         <Border Background="#FFCDD2" Padding="6,2" CornerRadius="3" Margin="12,12,0,4">
                             <TextBlock FontSize="12" FontWeight="SemiBold">
                                 <Run Text="Ciddiyet: "/>
@@ -183,8 +184,56 @@
                        HorizontalAlignment="Center" Foreground="#666"/>
         </Border>
 
+        <!-- Geçmiş Analizler -->
+        <Border Grid.Row="4" Background="#FAFAFA" CornerRadius="6" Padding="8" Margin="0,8,0,4"
+                BorderBrush="#E0E0E0" BorderThickness="1">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Geçmiş Başlık -->
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
+                    <TextBlock Text="📋 Geçmiş Analizler" FontSize="14" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <Button Content="🔄 Yenile"
+                            Command="{Binding RefreshHistoryListCommand}"
+                            Style="{StaticResource SecondaryButton}"
+                            FontSize="11" Padding="8,4" Margin="12,0,0,0"/>
+                </StackPanel>
+
+                <!-- Geçmiş Listesi (DataGrid) -->
+                <DataGrid Grid.Row="1"
+                          ItemsSource="{Binding HistoryItems}"
+                          SelectedItem="{Binding SelectedHistoryItem}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          SelectionMode="Single"
+                          HeadersVisibility="Column"
+                          RowHeaderWidth="0"
+                          FontSize="12"
+                          BorderThickness="0"
+                          Background="Transparent"
+                          AlternatingRowBackground="#F0F0F0">
+
+                    <DataGrid.InputBindings>
+                        <MouseBinding Gesture="LeftDoubleClick"
+                                      Command="{Binding ShowHistoryDetailCommand}"/>
+                    </DataGrid.InputBindings>
+
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Tarih" Binding="{Binding DisplayTime}" Width="140"/>
+                        <DataGridTextColumn Header="Hata Kodu" Binding="{Binding ErrorCode}" Width="110"
+                                            FontFamily="Consolas" FontWeight="SemiBold"/>
+                        <DataGridTextColumn Header="Hata Adı" Binding="{Binding ErrorName}" Width="*"/>
+                        <DataGridTextColumn Header="Durum" Binding="{Binding ResolvedIcon}" Width="60"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </Border>
+
         <!-- Alt Bilgi -->
-        <TextBlock Grid.Row="3" Text="v0.2.0 — BSOD Doctor — Watch Service" 
+        <TextBlock Grid.Row="5" Text="v0.3.0 — BSOD Doctor — Watch Service" 
                    FontSize="11" Foreground="#999" HorizontalAlignment="Right"/>
     </Grid>
 </Window>

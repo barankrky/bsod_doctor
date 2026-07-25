@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -37,7 +38,7 @@ public partial class MainViewModel : ObservableObject
         _databaseService = new DatabaseService(dbPath);
         _watchService = new BsodWatchService(_databaseService, TimeSpan.FromDays(1));
 
-        // Önce veritabanını başlat, sonra otomatik taramayı başlat
+        // Önce veritabanını başlat, sonra geçmişi yükle ve otomatik taramayı başlat
         _ = InitializeAsync(seedPath);
     }
 
@@ -48,12 +49,33 @@ public partial class MainViewModel : ObservableObject
             await _databaseService.InitializeAsync(seedPath);
             StatusText = "Hazır";
 
-            // DB hazır olduktan sonra otomatik taramayı başlat
+            // Geçmiş kayıtlarını yükle (çözülmemiş olanlar)
+            await RefreshHistoryAsync();
+
+            // DB ve geçmiş hazır olduktan sonra otomatik taramayı başlat
             await StartWatchScanAsync();
         }
         catch (Exception ex)
         {
             StatusText = $"Veritabanı hatası: {ex.Message}";
+        }
+    }
+
+    /// <summary>
+    /// Geçmiş analiz kayıtlarını veritabanından yükler.
+    /// </summary>
+    private async Task RefreshHistoryAsync()
+    {
+        try
+        {
+            var items = await _databaseService.GetHistoryAsync(onlyUnresolved: true);
+            HistoryItems.Clear();
+            foreach (var item in items)
+                HistoryItems.Add(item);
+        }
+        catch
+        {
+            // Geçmiş yüklenemezse sessizce geç — kullanıcı butonla tekrar deneyebilir
         }
     }
 
@@ -85,6 +107,9 @@ public partial class MainViewModel : ObservableObject
                 HasResult = true;
                 IsResolved = false;
                 StatusText = $"{result.ErrorName} bulundu!";
+
+                // Geçmiş listesini yenile
+                await RefreshHistoryAsync();
             }
             else
             {
@@ -146,6 +171,12 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private bool _isResolved;
 
+    // Geçmiş listesi
+    public ObservableCollection<HistoryItem> HistoryItems { get; } = new();
+
+    [ObservableProperty]
+    private HistoryItem? _selectedHistoryItem;
+
     // Computed property'ler — Visibility binding için
     public bool HasRelatedKbUrls => !string.IsNullOrEmpty(RelatedKbUrls);
     public bool HasDumpFilePath => !string.IsNullOrEmpty(DumpFilePath);
@@ -153,7 +184,7 @@ public partial class MainViewModel : ObservableObject
     // ---- Commands ----
 
     /// <summary>
-    /// Taramayı manuel olarak yeniden başlatır.
+    /// Taramayı manuel olarak yeniden başlatır (tüm dump'ları tara).
     /// </summary>
     [RelayCommand]
     private async Task ScanNowAsync()
@@ -189,6 +220,9 @@ public partial class MainViewModel : ObservableObject
             await _databaseService.MarkAsResolvedAsync(_currentHistoryId, "Kullanıcı tarafından çözüldü olarak işaretlendi.");
             IsResolved = true;
             StatusText = "Hata çözüldü olarak işaretlendi.";
+
+            // Geçmiş listesini yenile (çözüldü işaretlenen kayıt artık listeden kaybolur)
+            await RefreshHistoryAsync();
         }
         catch (Exception ex)
         {
@@ -215,5 +249,57 @@ public partial class MainViewModel : ObservableObject
         IsResolved = false;
         _currentHistoryId = 0;
         StatusText = "Hazır";
+    }
+
+    /// <summary>
+    /// Geçmiş listesini manuel yeniler.
+    /// </summary>
+    [RelayCommand]
+    private async Task RefreshHistoryListAsync()
+    {
+        await RefreshHistoryAsync();
+        StatusText = "Geçmiş yenilendi.";
+    }
+
+    /// <summary>
+    /// Geçmiş listesinden bir kayda tıklandığında detayları yükler.
+    /// </summary>
+    [RelayCommand]
+    private async Task ShowHistoryDetailAsync()
+    {
+        if (SelectedHistoryItem == null) return;
+
+        var item = SelectedHistoryItem;
+
+        // Detay alanlarını doldur
+        ErrorCode = item.ErrorCode;
+        ErrorName = item.ErrorName;
+        DumpFilePath = item.DumpFilePath;
+        HasResult = true;
+        IsResolved = item.IsResolved;
+        _currentHistoryId = item.Id;
+
+        // BSOD çözüm bilgilerini veritabanından getir
+        try
+        {
+            var bsodError = await _databaseService.FindErrorByCodeAsync(item.ErrorCode);
+            Description = bsodError?.Description ?? "Bu hata kodu için kayıtlı çözüm bulunamadı.";
+            SolutionSteps = bsodError?.SolutionSteps ?? string.Empty;
+            KesinCozum = bsodError?.KesinCozum ?? string.Empty;
+            CommonCauses = bsodError?.CommonCauses ?? string.Empty;
+            RelatedKbUrls = bsodError?.RelatedKbUrls ?? string.Empty;
+            Severity = bsodError?.Severity ?? 0;
+        }
+        catch
+        {
+            Description = "Çözüm bilgisi alınamadı.";
+            SolutionSteps = string.Empty;
+            KesinCozum = string.Empty;
+            CommonCauses = string.Empty;
+            RelatedKbUrls = string.Empty;
+            Severity = 0;
+        }
+
+        StatusText = $"{item.ErrorName} — {item.DisplayTime}";
     }
 }

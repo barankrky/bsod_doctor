@@ -266,6 +266,42 @@ public class DatabaseService
         }
     }
 
+    /// <summary>
+    /// Geçmiş analiz kayıtlarını getirir.
+    /// <paramref name="onlyUnresolved"/> = true ise sadece çözülmemiş kayıtlar.
+    /// </summary>
+    public async Task<List<Models.HistoryItem>> GetHistoryAsync(bool onlyUnresolved = true, CancellationToken cancellationToken = default)
+    {
+        var items = new List<Models.HistoryItem>();
+
+        await using var conn = new SqliteConnection(_connectionString);
+        await conn.OpenAsync(cancellationToken);
+
+        var sql = "SELECT id, timestamp, dump_file_path, error_code, error_name, resolved FROM analysis_history";
+        if (onlyUnresolved)
+            sql += " WHERE resolved = 0 OR resolved IS NULL";
+        sql += " ORDER BY timestamp DESC LIMIT 100";
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = sql;
+
+        using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            items.Add(new Models.HistoryItem
+            {
+                Id = reader.GetInt32(0),
+                Timestamp = reader.GetDateTime(1),
+                DumpFilePath = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
+                ErrorCode = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
+                ErrorName = reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
+                IsResolved = !reader.IsDBNull(5) && reader.GetBoolean(5),
+            });
+        }
+
+        return items;
+    }
+
     private sealed class JsonSeedError
     {
         public string ErrorCode { get; set; } = string.Empty;
