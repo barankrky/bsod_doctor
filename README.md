@@ -1,6 +1,10 @@
+<p align="center">
+  <img src="docs/hero-banner.gif" alt="BSOD Doctor - Windows Mavi Ekran Analiz Aracı" width="100%">
+</p>
+
 # BSOD Doctor 🩺
 
-Windows BSOD (mavi ekran) hatalarını analiz eden, tanımlayan ve Türkçe çözüm sunarkur. Minidump dosyalarını doğrudan okuyup hata kodunu çıkararak kullanıcıya adım adım rehberlik eder.
+Windows BSOD (mavi ekran) hatalarını analiz eden, tanımlayan ve Türkçe çözüm sunan araç. Minidump dosyalarını doğrudan okuyup hata kodunu çıkararak kullanıcıya adım adım rehberlik eder.
 
 ---
 
