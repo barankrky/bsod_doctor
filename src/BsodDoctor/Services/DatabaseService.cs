@@ -208,7 +208,14 @@ public class DatabaseService
         countCommand.CommandText = "SELECT COUNT(1) FROM bsod_errors";
         var existingCount = Convert.ToInt32(await countCommand.ExecuteScalarAsync(cancellationToken));
         if (existingCount > 0)
-            return;
+        {
+            // 0xD1 (DRIVER_IRQL_NOT_LESS_OR_EQUAL) var mı kontrol et — yoksa re-import
+            var checkCommand = connection.CreateCommand();
+            checkCommand.CommandText = "SELECT COUNT(1) FROM bsod_errors WHERE error_code = '0x000000D1'";
+            var hasD1 = Convert.ToInt32(await checkCommand.ExecuteScalarAsync(cancellationToken));
+            if (hasD1 > 0)
+                return; // seed data tam, atla
+        }
 
         var json = await File.ReadAllTextAsync(jsonPath, cancellationToken);
         var errors = JsonSerializer.Deserialize<List<JsonSeedError>>(json);
