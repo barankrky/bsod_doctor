@@ -24,7 +24,7 @@ public partial class MainViewModel : ObservableObject
         Directory.CreateDirectory(dataDir);
 
         var dbPath = Path.Combine(dataDir, "bsod_errors.db");
-        var seedPath = Path.Combine(baseDir, "..", "..", "..", "..", "database", "seed_data.json");
+        var seedPath = Path.Combine(baseDir, "..", "..", "..", "..", "..", "database", "seed_data.json");
 
         // Alternatif seed path (çalışma dizinine göre)
         if (!File.Exists(seedPath))
