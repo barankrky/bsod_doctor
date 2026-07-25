@@ -15,15 +15,14 @@ public class AnalysisResult
     public string CommonCauses { get; set; } = string.Empty;
     public string RelatedKbUrls { get; set; } = string.Empty;
     public int Severity { get; set; }
-    public DateTime AnalysisTime { get; set; } = DateTime.Now;
+    /// <summary>
+    /// Analiz zamanı (UTC). Veritabanındaki timestamp ile tutarlılık için UTC kullanılır.
+    /// Not: Bu alan veritabanına kaydedilmez — DB kendi CURRENT_TIMESTAMP'ını kullanır.
+    /// </summary>
+    public DateTime AnalysisTime { get; set; } = DateTime.UtcNow;
 
     /// <summary>
     /// Çözüm bulundu mu?
     /// </summary>
     public bool HasSolution => !string.IsNullOrEmpty(SolutionSteps);
-
-    /// <summary>
-    /// Bulunamayan hata kodları için Vis'e sorgu gönderilmeli mi?
-    /// </summary>
-    public bool NeedsRemoteLookup => string.IsNullOrEmpty(ErrorCode) == false && HasSolution == false;
 }

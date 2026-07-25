@@ -7,12 +7,7 @@
         xmlns:local="clr-namespace:BsodDoctor"
         mc:Ignorable="d"
         Title="BSOD Doctor" Height="750" Width="1000"
-        WindowStartupLocation="CenterScreen"
         Background="{DynamicResource ThemeBackground}">
-
-    <Window.DataContext>
-        <vm:MainViewModel />
-    </Window.DataContext>
 
     <Window.Resources>
         <!-- Converter'lar -->
@@ -250,7 +245,8 @@
         </Border>
 
         <!-- Alt Bilgi -->
-        <TextBlock Grid.Row="5" Text="v1.0.0 — BSOD Doctor [Beta] — Watch Service" 
-                   FontSize="11" Foreground="{DynamicResource ThemeLightMuted}" HorizontalAlignment="Right"/>
+        <TextBlock Grid.Row="5" FontSize="11" Foreground="{DynamicResource ThemeLightMuted}" HorizontalAlignment="Right">
+            <Run Text="v"/><Run Text="{Binding VersionText}"/><Run Text=" — BSOD Doctor [Beta]"/>
+        </TextBlock>
     </Grid>
 </Window>
