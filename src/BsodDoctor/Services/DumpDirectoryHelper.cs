@@ -66,14 +66,10 @@ internal static class DumpDirectoryHelper
                 dirs.Add(memDir);
         }
 
-        // Test/development amaçlı — proje içindeki TestDumps veya minidump klasörü
+        // Test/development amaçlı — proje içindeki TestDumps klasörü
         var testDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestDumps");
         if (Directory.Exists(testDir))
             dirs.Add(testDir);
-
-        var localMinidump = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "minidump");
-        if (Directory.Exists(localMinidump))
-            dirs.Add(localMinidump);
         }
         else
         {
