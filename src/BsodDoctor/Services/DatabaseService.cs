@@ -64,23 +64,7 @@ public class DatabaseService : IDatabaseService
         await command.ExecuteNonQueryAsync(cancellationToken);
 
         // Migration: kesin_cozum sütunu yoksa ekle (eski veritabanları için)
-        var hasKesinCozum = false;
-        var pragmaCmd = connection.CreateCommand();
-        pragmaCmd.CommandText = "PRAGMA table_info(bsod_errors)";
-        await using (var reader = await pragmaCmd.ExecuteReaderAsync(cancellationToken))
-        {
-            while (await reader.ReadAsync(cancellationToken))
-            {
-                var colName = reader.GetString(1); // column name is at index 1
-                if (colName == "kesin_cozum")
-                {
-                    hasKesinCozum = true;
-                    break;
-                }
-            }
-        }
-
-        if (!hasKesinCozum)
+        if (!await ColumnExistsAsync(connection, "bsod_errors", "kesin_cozum", cancellationToken))
         {
             var alterCmd = connection.CreateCommand();
             alterCmd.CommandText = "ALTER TABLE bsod_errors ADD COLUMN kesin_cozum TEXT";
@@ -88,23 +72,7 @@ public class DatabaseService : IDatabaseService
         }
 
         // Migration: is_notified sütunu yoksa ekle (eski veritabanları için)
-        var hasIsNotified = false;
-        var pragmaCmd2 = connection.CreateCommand();
-        pragmaCmd2.CommandText = "PRAGMA table_info(analysis_history)";
-        await using (var reader2 = await pragmaCmd2.ExecuteReaderAsync(cancellationToken))
-        {
-            while (await reader2.ReadAsync(cancellationToken))
-            {
-                var colName = reader2.GetString(1);
-                if (colName == "is_notified")
-                {
-                    hasIsNotified = true;
-                    break;
-                }
-            }
-        }
-
-        if (!hasIsNotified)
+        if (!await ColumnExistsAsync(connection, "analysis_history", "is_notified", cancellationToken))
         {
             var alterCmd2 = connection.CreateCommand();
             alterCmd2.CommandText = "ALTER TABLE analysis_history ADD COLUMN is_notified INTEGER DEFAULT 0";
@@ -348,6 +316,22 @@ public class DatabaseService : IDatabaseService
         }
 
         return items;
+    }
+
+    /// <summary>
+    /// Tabloda belirtilen sütunun var olup olmadığını kontrol eder.
+    /// </summary>
+    private static async Task<bool> ColumnExistsAsync(SqliteConnection connection, string tableName, string columnName, CancellationToken cancellationToken)
+    {
+        var cmd = connection.CreateCommand();
+        cmd.CommandText = $"PRAGMA table_info({tableName})";
+        await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            if (reader.GetString(1) == columnName)
+                return true;
+        }
+        return false;
     }
 
     private sealed class JsonSeedError
