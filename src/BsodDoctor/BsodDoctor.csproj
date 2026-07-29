@@ -9,6 +9,8 @@
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <!-- Sadece gerçek Windows build'lerinde WinRT API'lerini aktifleştir -->
     <DefineConstants Condition="$([MSBuild]::IsOSPlatform('Windows'))">$(DefineConstants);REAL_WINDOWS</DefineConstants>
+    <!-- Yönetici yetkisi manifest'i: dump dosyalarını okuyup silebilmek için gereklidir -->
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <ItemGroup>
