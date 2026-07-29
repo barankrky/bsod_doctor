@@ -11,9 +11,11 @@ builder.Services.AddWindowsService(options =>
     options.ServiceName = "BsodDoctorService";
 });
 
-// Veritabanı servisi (WPF uygulamasıyla aynı DB dosyasını paylaşır)
-var baseDir = AppDomain.CurrentDomain.BaseDirectory;
-var dataDir = Path.Combine(baseDir, "..", "Data");
+// Veritabanı servisi — CommonApplicationData altında, WPF ile paylaşılır
+// Not: WPF uygulaması da okuma yaparken bu yolu kontrol etmeli
+var dataDir = Path.Combine(
+    Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+    "BsodDoctor", "Data");
 Directory.CreateDirectory(dataDir);
 var dbPath = Path.Combine(dataDir, "bsod_errors.db");
 
