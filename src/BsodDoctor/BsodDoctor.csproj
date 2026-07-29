@@ -22,6 +22,13 @@
                       Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
   </ItemGroup>
 
+  <!-- Logo ve görsel varlıklar -->
+  <ItemGroup>
+    <Content Include="Assets\logo.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
   <!-- Seed data dosyasını build/publish çıktısına kopyala -->
   <ItemGroup>
     <Content Include="..\..\database\seed_data.json" Link="database\seed_data.json">

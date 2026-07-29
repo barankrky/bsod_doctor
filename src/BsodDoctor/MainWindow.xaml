@@ -7,6 +7,7 @@
         xmlns:local="clr-namespace:BsodDoctor"
         mc:Ignorable="d"
         Title="BSOD Doctor" Height="750" Width="1000"
+        Icon="Assets/logo.png"
         Background="{DynamicResource ThemeBackground}">
 
     <Window.Resources>
@@ -77,10 +78,15 @@
             <RowDefinition Height="Auto"/>      <!-- Footer -->
         </Grid.RowDefinitions>
 
-        <!-- Başlık -->
-        <StackPanel Grid.Row="0" Margin="0,0,0,8">
-            <TextBlock Text="BSOD Doctor" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource TitleForeground}"/>
-            <TextBlock Text="Mavi Ekran Hatalarına Hızlı Çözüm" FontSize="13" Foreground="{DynamicResource ThemeMuted}"/>
+        <!-- Başlık / Logo -->
+        <StackPanel Grid.Row="0" Margin="0,4,0,8">
+            <StackPanel Orientation="Horizontal">
+                <Image Source="Assets/logo.png" Width="48" Height="48" Margin="0,0,12,0" Stretch="Uniform"/>
+                <StackPanel>
+                    <TextBlock Text="BSOD Doctor" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource TitleForeground}"/>
+                    <TextBlock Text="Mavi Ekran Hatalarına Hızlı Çözüm" FontSize="13" Foreground="{DynamicResource ThemeMuted}"/>
+                </StackPanel>
+            </StackPanel>
             <Separator Margin="0,6,0,0" Background="{DynamicResource ThemeSeparator}"/>
         </StackPanel>
 
