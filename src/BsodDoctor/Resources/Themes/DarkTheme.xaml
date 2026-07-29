@@ -17,10 +17,10 @@
     <SolidColorBrush x:Key="ThemeSeparator" Color="{StaticResource ThemeSeparatorColor}"/>
 
     <!-- Kart / Blok Renkleri -->
-    <Color x:Key="CardWarningColor">#3D2E00</Color>
-    <Color x:Key="CardCodeColor">#3D2E00</Color>
+    <Color x:Key="CardWarningColor">#2A2A2A</Color>
+    <Color x:Key="CardCodeColor">#2A2A2A</Color>
     <Color x:Key="CardNameColor">#1A3A5C</Color>
-    <Color x:Key="CardCausesColor">#3D3A00</Color>
+    <Color x:Key="CardCausesColor">#2A2A1A</Color>
     <Color x:Key="CardSolutionColor">#1A3D1A</Color>
     <Color x:Key="CardSeverityColor">#5C1A1A</Color>
     <Color x:Key="CardLoadingColor">#2D2D2D</Color>
@@ -53,6 +53,10 @@
     <SolidColorBrush x:Key="SuccessButtonHoverBg" Color="{StaticResource SuccessBtnHoverColor}"/>
     <SolidColorBrush x:Key="SecondaryButtonBg" Color="{StaticResource SecondaryBtnColor}"/>
     <SolidColorBrush x:Key="SecondaryButtonHoverBg" Color="{StaticResource SecondaryBtnHoverColor}"/>
+
+    <!-- Koyu temada durum/uyari metni rengi -->
+    <Color x:Key="WarningTextColor">#FFB74D</Color>
+    <SolidColorBrush x:Key="WarningText" Color="{StaticResource WarningTextColor}"/>
 
     <!-- Diğer -->
     <Color x:Key="LinkColor">#64B5F6</Color>

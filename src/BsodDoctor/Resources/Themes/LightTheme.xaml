@@ -54,6 +54,10 @@
     <SolidColorBrush x:Key="SecondaryButtonBg" Color="{StaticResource SecondaryBtnColor}"/>
     <SolidColorBrush x:Key="SecondaryButtonHoverBg" Color="{StaticResource SecondaryBtnHoverColor}"/>
 
+    <!-- Aydinlik temada durum/uyari metni rengi -->
+    <Color x:Key="WarningTextColor">#E65100</Color>
+    <SolidColorBrush x:Key="WarningText" Color="{StaticResource WarningTextColor}"/>
+
     <!-- Diğer -->
     <Color x:Key="LinkColor">#1565C0</Color>
     <Color x:Key="ResolvedTextColor">#2E7D32</Color>

@@ -111,7 +111,7 @@
 
             <Border Background="{DynamicResource CardWarning}" Padding="12,6" CornerRadius="4" Margin="12,4,0,4" MinWidth="200">
                 <TextBlock Text="{Binding StatusText}" VerticalAlignment="Center" TextWrapping="Wrap"
-                           Foreground="{DynamicResource ThemeForeground}"/>
+                           Foreground="{DynamicResource WarningText}" FontWeight="SemiBold"/>
             </Border>
         </StackPanel>
 
