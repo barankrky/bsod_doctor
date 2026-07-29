@@ -550,8 +550,7 @@
     "KesinCozum": "En kesin Ã§Ã¶zÃ¼m: GÃ¼venli Mod'da son yÃ¼klenen sÃ¼rÃ¼cÃ¼yÃ¼ kaldÄ±r. sfc /scannow Ã§alÄ±ÅŸtÄ±r. Windows Bellek TanÄ±lama AracÄ±'nÄ± Ã§alÄ±ÅŸtÄ±r."
   }
 
-  },
-  {
+{
     "ErrorCode": "0x000000A5",
     "ErrorName": "ACPI_BIOS_ERROR",
     "Category": "Donanim",
@@ -816,3 +815,4 @@
     "KesinCozum": "En kesin cozum: sfc /scannow ve DISM calistir. Windows Bellek Tanilama calistir."
   }
 ]
+
