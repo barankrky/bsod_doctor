@@ -28,13 +28,27 @@ public partial class App : Application
             return;
         }
 
-        // --notify: bildirimleri kontrol et, toast göster, çık
+        // --notify: bildirimleri kontrol et, toast göster, tıklanmayı bekle (30sn)
         if (e.Args.Contains("--notify"))
         {
             var notifier = new BackgroundNotifier();
             notifier.ShowPendingNotifications();
-            Shutdown();
-            return;
+
+            // Toast bildirimine tıklanması için message pump'i 30 saniye canlı tut
+            // COM activator (NotificationActivator) bu sürede çağrılabilir
+            var timeout = TimeSpan.FromSeconds(30);
+            var timer = new System.Windows.Threading.DispatcherTimer
+            {
+                Interval = timeout
+            };
+            timer.Tick += (_, _) =>
+            {
+                timer.Stop();
+                Shutdown();
+            };
+            timer.Start();
+
+            return; // Application.Run() devam etsin, timer shutdown edene kadar
         }
 
         // --open-error=KOD: normal başlat ama belirtilen hatayı yükle

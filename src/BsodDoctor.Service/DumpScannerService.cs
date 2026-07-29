@@ -232,15 +232,4 @@ public class DumpScannerService : BackgroundService
     #endregion
 }
 
-/// <summary>
-/// Bildirim marker'ı için model — JSON olarak dosyaya yazılır,
-/// WPF uygulaması --notify modunda bu dosyayı okuyup toast gösterir.
-/// </summary>
-internal class PendingNotification
-{
-    public int HistoryId { get; init; }
-    public string ErrorCode { get; init; } = string.Empty;
-    public string ErrorName { get; init; } = string.Empty;
-    public int Severity { get; init; }
-    public DateTime Timestamp { get; init; }
-}
+// PendingNotification modeli artık shared Models/PendingNotification.cs'de tanımlı
