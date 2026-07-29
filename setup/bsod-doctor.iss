@@ -10,11 +10,11 @@
 #endif
 
 #define MyAppName "BSOD Doctor"
-#define MyAppPublisher "NextroByte"
+#define MyAppPublisher "burakdmrbkr"
 #define MyAppURL "https://github.com/burakdmrbkr/bsod_doctor"
 #define MyAppExeName "BsodDoctor.exe"
 #define MyServiceExeName "BsodDoctor.Service.exe"
-#define MyAumid "NextroByte.BsodDoctor"
+#define MyAumid "burakdmrbkr.BsodDoctor"
 
 [Setup]
 AppId={{B5E7F3A1-2C4D-4A8F-9E6B-1D3C5F7A9B0E}

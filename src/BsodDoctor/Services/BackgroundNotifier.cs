@@ -24,7 +24,7 @@ public class BackgroundNotifier
     /// AppUserModelID — Windows toast notification'ları için benzersiz tanımlayıcı.
     /// Setup sırasında Start Menu'de kısayol oluşturulurken bu ID kullanılır.
     /// </summary>
-    public const string AUMID = "NextroByte.BsodDoctor";
+    public const string AUMID = "burakdmrbkr.BsodDoctor";
 
     private static readonly string PendingDir = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
