@@ -38,7 +38,7 @@ VersionInfoVersion=0.1.0.{#MyAppBuildNumber}
 VersionInfoCompany={#MyAppPublisher}
 VersionInfoDescription={#MyAppName}
 ShowLanguageDialog=no
-; Kurulum sonunda restart gerekebilir (service kaydı icin)
+; Kurulum sonunda restart gerekebilir (service kayd icin)
 RestartIfNeededByRun=no
 
 [Tasks]
