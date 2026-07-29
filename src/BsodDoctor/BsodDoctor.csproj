@@ -15,17 +15,10 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.10" />
     <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.53.3" />
-    <!-- Toast notification: GeneratePathProperty ile Pkg* property'si üretilir -->
-    <!-- ExcludeAssets=compile ile Linux'ta derleme hatası vermez -->
+    <!-- Toast notification: sadece Windows build'lerinde eklenir -->
+    <!-- Linux'ta Condition sayesinde restore edilmez, derleme hatası olmaz -->
     <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3"
-                      ExcludeAssets="compile" GeneratePathProperty="true" />
-  </ItemGroup>
-
-  <!-- Windows build'lerinde DLL'i NuGet cache'inden referans al -->
-  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
-    <Reference Include="Microsoft.Toolkit.Uwp.Notifications">
-      <HintPath>$(PkgMicrosoft_Toolkit_Uwp_Notifications)\lib\net5.0-windows10.0.17763\Microsoft.Toolkit.Uwp.Notifications.dll</HintPath>
-    </Reference>
+                      Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
   </ItemGroup>
 
   <!-- Seed data dosyasını build/publish çıktısına kopyala -->
