@@ -18,7 +18,8 @@ public class DatabaseService : IDatabaseService
         _connectionString = new SqliteConnectionStringBuilder
         {
             DataSource = dbPath,
-            Mode = SqliteOpenMode.ReadWriteCreate
+            Mode = SqliteOpenMode.ReadWriteCreate,
+            Pooling = true
         }.ToString();
     }
 
@@ -29,6 +30,11 @@ public class DatabaseService : IDatabaseService
     {
         await using var connection = new SqliteConnection(_connectionString);
         await connection.OpenAsync(cancellationToken);
+
+        // WAL modu: okuma/yazma çakışmasını azaltır, performansı artırır
+        var walCmd = connection.CreateCommand();
+        walCmd.CommandText = "PRAGMA journal_mode=WAL";
+        await walCmd.ExecuteNonQueryAsync(cancellationToken);
 
         var command = connection.CreateCommand();
         command.CommandText = """

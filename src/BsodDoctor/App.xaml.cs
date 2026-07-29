@@ -59,9 +59,10 @@ public partial class App : Application
             .FirstOrDefault(a => a.StartsWith("--open-error="))
             ?.Split('=', 2)[1];
 
-        // Normal başlatma
-        var baseDir = AppDomain.CurrentDomain.BaseDirectory;
-        var dataDir = Path.Combine(baseDir, "Data");
+        // Normal başlatma — veritabanı CommonApplicationData'da (yetki sorunu olmaz)
+        var dataDir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+            "BsodDoctor", "Data");
         Directory.CreateDirectory(dataDir);
 
         var dbPath = Path.Combine(dataDir, "bsod_errors.db");
