@@ -49,18 +49,31 @@ internal static class DumpDirectoryHelper
                 Debug.WriteLine($"[DumpDirectoryHelper] Registry erişim hatası: {ex.Message}");
             }
 
-            if (dirs.Count == 0)
-            {
-                var minidumpDir = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Minidump");
-                if (Directory.Exists(minidumpDir))
-                    dirs.Add(minidumpDir);
+            // Her zaman C:\Windows\Minidump'ı kontrol et — registry'de MinidumpDir
+        // olmasa bile çalışsın (registry bypass bug fix)
+        var winMinidump = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Minidump");
+        if (Directory.Exists(winMinidump) && !dirs.Contains(winMinidump))
+            dirs.Add(winMinidump);
 
-                var memoryDmp = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.Windows), "MEMORY.DMP");
-                if (File.Exists(memoryDmp))
-                    dirs.Add(Path.GetDirectoryName(memoryDmp)!);
-            }
+        // MEMORY.DMP'nin bulunduğu dizini de her zaman ekle
+        var memoryDmp = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.Windows), "MEMORY.DMP");
+        if (File.Exists(memoryDmp))
+        {
+            var memDir = Path.GetDirectoryName(memoryDmp)!;
+            if (!dirs.Contains(memDir))
+                dirs.Add(memDir);
+        }
+
+        // Test/development amaçlı — proje içindeki TestDumps veya minidump klasörü
+        var testDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestDumps");
+        if (Directory.Exists(testDir))
+            dirs.Add(testDir);
+
+        var localMinidump = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "minidump");
+        if (Directory.Exists(localMinidump))
+            dirs.Add(localMinidump);
         }
         else
         {

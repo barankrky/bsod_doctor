@@ -63,7 +63,8 @@ public partial class MainViewModel : ObservableObject
             await RefreshHistoryAsync();
 
             // DB ve geçmiş hazır olduktan sonra otomatik taramayı başlat
-            await StartWatchScanAsync();
+            // scanAll: true — tüm dump'ları tara (cooldown zaten mükerrerleri engeller)
+            await StartWatchScanAsync(scanAll: true);
         }
         catch (Exception ex)
         {
