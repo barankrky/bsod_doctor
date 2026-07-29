@@ -65,6 +65,7 @@ public class DatabaseService : IDatabaseService
 
             CREATE INDEX IF NOT EXISTS idx_bsod_errors_code ON bsod_errors(error_code);
             CREATE INDEX IF NOT EXISTS idx_analysis_history_timestamp ON analysis_history(timestamp);
+            CREATE INDEX IF NOT EXISTS idx_analysis_history_code_timestamp ON analysis_history(error_code, timestamp);
             """;
 
         await command.ExecuteNonQueryAsync(cancellationToken);
@@ -141,10 +142,10 @@ public class DatabaseService : IDatabaseService
         command.CommandText = """
             SELECT COUNT(1) FROM analysis_history
             WHERE error_code = @code AND timestamp >= @since
-            LIMIT 1
             """;
         command.Parameters.AddWithValue("@code", errorCode);
-        command.Parameters.AddWithValue("@since", since.ToString("O"));
+        // SQLite CURRENT_TIMESTAMP ile uyumlu format (yyyy-MM-dd HH:mm:ss)
+        command.Parameters.AddWithValue("@since", since.ToString("yyyy-MM-dd HH:mm:ss"));
 
         var count = Convert.ToInt32(await command.ExecuteScalarAsync(cancellationToken));
         return count > 0;
@@ -233,12 +234,6 @@ public class DatabaseService : IDatabaseService
         if (!File.Exists(jsonPath))
             return;
 
-        var countCommand = connection.CreateCommand();
-        countCommand.CommandText = "SELECT COUNT(1) FROM bsod_errors";
-        var existingCount = Convert.ToInt32(await countCommand.ExecuteScalarAsync(cancellationToken));
-        if (existingCount > 0)
-            return; // seed data zaten yüklü, atla
-
         var json = await File.ReadAllTextAsync(jsonPath, cancellationToken);
         var errors = JsonSerializer.Deserialize<List<JsonSeedError>>(json);
         if (errors == null || errors.Count == 0)
@@ -250,8 +245,18 @@ public class DatabaseService : IDatabaseService
         {
             var command = connection.CreateCommand();
             command.CommandText = """
-                INSERT OR IGNORE INTO bsod_errors (error_code, error_name, category, description, solution_steps, kesin_cozum, common_causes, related_kb_urls, severity)
+                INSERT INTO bsod_errors (error_code, error_name, category, description, solution_steps, kesin_cozum, common_causes, related_kb_urls, severity)
                 VALUES (@code, @name, @cat, @desc, @solutions, @kesinCozum, @causes, @urls, @sev)
+                ON CONFLICT(error_code) DO UPDATE SET
+                    error_name = excluded.error_name,
+                    category = excluded.category,
+                    description = excluded.description,
+                    solution_steps = excluded.solution_steps,
+                    kesin_cozum = excluded.kesin_cozum,
+                    common_causes = excluded.common_causes,
+                    related_kb_urls = excluded.related_kb_urls,
+                    severity = excluded.severity,
+                    updated_at = CURRENT_TIMESTAMP
                 """;
 
             var pCode = command.Parameters.Add("@code", SqliteType.Text);

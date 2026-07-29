@@ -12,13 +12,10 @@ CREATE TABLE IF NOT EXISTS bsod_errors (
     kesin_cozum TEXT,                          -- En kesin çözüm (1-2 adım)
     common_causes TEXT,                        -- Yaygın nedenler
     related_kb_urls TEXT,                      -- Microsoft KB linkleri
-    severity INTEGER,                          -- 1-5 arası ciddiyet
+    severity INTEGER DEFAULT 0,               -- 1-5 arası ciddiyet (0 = bilinmiyor)
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
-
--- Migration düzeltmesi (eski DB'ler için)
-ALTER TABLE bsod_errors ADD COLUMN kesin_cozum TEXT;
 
 -- Analiz geçmişi
 CREATE TABLE IF NOT EXISTS analysis_history (
@@ -27,11 +24,12 @@ CREATE TABLE IF NOT EXISTS analysis_history (
     dump_file_path TEXT,
     error_code TEXT,
     error_name TEXT,
-    resolved BOOLEAN DEFAULT 0,
+    resolved INTEGER DEFAULT 0,
     user_feedback TEXT,
-    FOREIGN KEY (error_code) REFERENCES bsod_errors(error_code)
+    is_notified INTEGER DEFAULT 0
 );
 
 -- Hızlı arama için indeksler
 CREATE INDEX IF NOT EXISTS idx_bsod_errors_code ON bsod_errors(error_code);
 CREATE INDEX IF NOT EXISTS idx_analysis_history_timestamp ON analysis_history(timestamp);
+CREATE INDEX IF NOT EXISTS idx_analysis_history_code_timestamp ON analysis_history(error_code, timestamp);

@@ -34,12 +34,12 @@ internal static class DumpDirectoryHelper
                             dirs.Add(minidumpDir);
                     }
 
-                    var dumpFile = key.GetValue("DumpFile") as string;
-                    if (!string.IsNullOrEmpty(dumpFile))
+                    var dumpFilePath = key.GetValue("DumpFile") as string;
+                    if (!string.IsNullOrEmpty(dumpFilePath))
                     {
-                        dumpFile = Environment.ExpandEnvironmentVariables(dumpFile);
-                        var dumpDir = Path.GetDirectoryName(dumpFile);
-                        if (dumpDir != null && File.Exists(dumpFile))
+                        dumpFilePath = Environment.ExpandEnvironmentVariables(dumpFilePath);
+                        var dumpDir = Path.GetDirectoryName(dumpFilePath);
+                        if (dumpDir != null && Directory.Exists(dumpDir))
                             dirs.Add(dumpDir);
                     }
                 }
