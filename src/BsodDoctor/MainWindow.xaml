@@ -257,7 +257,7 @@
 
         <!-- Alt Bilgi -->
         <TextBlock Grid.Row="5" FontSize="11" Foreground="{DynamicResource ThemeLightMuted}" HorizontalAlignment="Right">
-            <Run Text="v"/><Run Text="{Binding VersionText}"/><Run Text=" — BSOD Doctor [Beta]"/>
+            <Run Text="v"/><Run Text="{Binding VersionText}"/><Run Text=" — BSOD Doctor"/>
         </TextBlock>
     </Grid>
 </Window>

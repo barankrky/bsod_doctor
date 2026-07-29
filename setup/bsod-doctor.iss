@@ -1,8 +1,8 @@
 ; BSOD Doctor — Inno Setup Script
-; Derleme: iscc /dMyAppVersion="0.1-beta.X" /dMyAppBuildNumber=X setup\bsod-doctor.iss
+; Derleme: iscc /dMyAppVersion="1.0.X" /dMyAppBuildNumber=X setup\bsod-doctor.iss
 
 #ifndef MyAppVersion
-  #define MyAppVersion "0.1-beta"
+  #define MyAppVersion "1.0.0"
 #endif
 
 #ifndef MyAppBuildNumber
@@ -34,7 +34,7 @@ SolidCompression=yes
 WizardStyle=modern
 PrivilegesRequired=admin
 UninstallDisplayIcon={app}\{#MyAppExeName}
-VersionInfoVersion=0.1.0.{#MyAppBuildNumber}
+VersionInfoVersion=1.0.0.{#MyAppBuildNumber}
 VersionInfoCompany={#MyAppPublisher}
 VersionInfoDescription={#MyAppName}
 ShowLanguageDialog=no
