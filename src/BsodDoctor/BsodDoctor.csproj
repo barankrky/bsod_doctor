@@ -15,9 +15,16 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.10" />
     <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.53.3" />
-    <!-- Toast notification: NuGet doğrudan kullanılır, ExcludeAssets'a gerek yok -->
-    <!-- REAL_WINDOWS conditional compile ile Windows dışında derlenmez -->
-    <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" />
+    <!-- Toast notification: NuGet paketi indirilir ama compile assets Windows'a özel -->
+    <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" ExcludeAssets="compile" />
+  </ItemGroup>
+
+  <!-- Windows build'lerinde DesktopNotificationManagerCompat DLL'i referans al -->
+  <!-- $(PkgMicrosoft_Toolkit_Uwp_Notifications) NuGet tarafından otomatik tanımlanır -->
+  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+    <Reference Include="Microsoft.Toolkit.Uwp.Notifications">
+      <HintPath>$(PkgMicrosoft_Toolkit_Uwp_Notifications)\lib\net5.0-windows10.0.17763\Microsoft.Toolkit.Uwp.Notifications.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <!-- Seed data dosyasını build/publish çıktısına kopyala -->
