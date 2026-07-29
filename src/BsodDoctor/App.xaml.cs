@@ -20,6 +20,9 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        // Toast notification tıklama event'ini global olarak bir kere kaydet
+        BackgroundNotifier.RegisterGlobalActivation();
+
         // --install-shortcut: AUMID kısayolunu oluştur, çık
         if (e.Args.Contains("--install-shortcut"))
         {

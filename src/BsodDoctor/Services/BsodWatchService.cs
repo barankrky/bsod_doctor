@@ -27,7 +27,7 @@ public class BsodWatchService : IBsodWatchService
     {
         try
         {
-            var dumpDirs = GetDumpDirectories();
+            var dumpDirs = DumpDirectoryHelper.GetDumpDirectories();
             if (dumpDirs.Count == 0)
                 return null;
 
@@ -88,65 +88,6 @@ public class BsodWatchService : IBsodWatchService
 
     #region Dizin / Dosya Bulma
 
-    private static List<string> GetDumpDirectories()
-    {
-        var dirs = new List<string>();
-
-        if (OperatingSystem.IsWindows())
-        {
-            try
-            {
-                using var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
-                    @"SYSTEM\CurrentControlSet\Control\CrashControl");
-                if (key != null)
-                {
-                    var minidumpDir = key.GetValue("MinidumpDir") as string;
-                    if (!string.IsNullOrEmpty(minidumpDir))
-                    {
-                        minidumpDir = Environment.ExpandEnvironmentVariables(minidumpDir);
-                        if (Directory.Exists(minidumpDir))
-                            dirs.Add(minidumpDir);
-                    }
-
-                    var dumpFile = key.GetValue("DumpFile") as string;
-                    if (!string.IsNullOrEmpty(dumpFile))
-                    {
-                        dumpFile = Environment.ExpandEnvironmentVariables(dumpFile);
-                        var dumpDir = Path.GetDirectoryName(dumpFile);
-                        if (dumpDir != null && File.Exists(dumpFile))
-                            dirs.Add(dumpDir);
-                    }
-                }
-            }
-            catch (Exception ex) when (ex is System.Security.SecurityException or UnauthorizedAccessException)
-            {
-                // Kayıt defterine erişim yetkisi yok — varsayılan yolları dene
-                Debug.WriteLine($"[BSOD Doctor] Registry erişim hatası: {ex.Message}");
-            }
-
-            if (dirs.Count == 0)
-            {
-                var minidumpDir = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Minidump");
-                if (Directory.Exists(minidumpDir))
-                    dirs.Add(minidumpDir);
-
-                var memoryDmp = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.Windows), "MEMORY.DMP");
-                if (File.Exists(memoryDmp))
-                    dirs.Add(Path.GetDirectoryName(memoryDmp)!);
-            }
-        }
-        else
-        {
-            var testDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestDumps");
-            if (Directory.Exists(testDir))
-                dirs.Add(testDir);
-        }
-
-        return dirs;
-    }
-
     /// <summary>Son 1 günde değişmiş .dmp dosyalarını bulur.</summary>
     private static List<string> FindRecentDumpFiles(List<string> directories)
     {
@@ -191,18 +132,8 @@ public class BsodWatchService : IBsodWatchService
             {
                 foreach (var file in Directory.GetFiles(dir, "*.dmp", SearchOption.TopDirectoryOnly))
                 {
-                    try
-                    {
-                        // Dosyayı okuyabiliyor muyuz diye kontrol et
-                        using var fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read);
-                        if (fs.Length >= 36) // minidump header en az 36 byte
-                            files.Add(file);
-                    }
-                    catch (Exception ex)
-                    {
-                        // Dosya kilitli veya erişilemez — atla
-                        Debug.WriteLine($"[BSOD Doctor] Dosya atlanıyor (erişim): {ex.Message}");
-                    }
+                    // MinidumpReader.ReadBugCheckCode içinde dosya validasyonu yapılır
+                    files.Add(file);
                 }
             }
             catch (Exception ex)

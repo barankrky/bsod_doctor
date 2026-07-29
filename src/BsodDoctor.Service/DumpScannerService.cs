@@ -68,7 +68,7 @@ public class DumpScannerService : BackgroundService
     /// </summary>
     private async Task ScanForNewDumpsAsync(CancellationToken cancellationToken)
     {
-        var dumpDirs = GetDumpDirectories();
+        var dumpDirs = DumpDirectoryHelper.GetDumpDirectories();
         if (dumpDirs.Count == 0)
         {
             _logger.LogDebug("Dump dizini bulunamadı.");
@@ -177,59 +177,6 @@ public class DumpScannerService : BackgroundService
 
         _logger.LogDebug("Bildirim marker'ı oluşturuldu: {File}", filePath);
     }
-
-    #region Dump Dizini Bulma
-
-    /// <summary>
-    /// Minidump dizinlerini registry'den veya varsayılan yollardan bulur.
-    /// BsodWatchService.GetDumpDirectories() ile aynı mantık.
-    /// </summary>
-    private static List<string> GetDumpDirectories()
-    {
-        var dirs = new List<string>();
-
-        if (OperatingSystem.IsWindows())
-        {
-            try
-            {
-                using var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
-                    @"SYSTEM\CurrentControlSet\Control\CrashControl");
-                if (key != null)
-                {
-                    var minidumpDir = key.GetValue("MinidumpDir") as string;
-                    if (!string.IsNullOrEmpty(minidumpDir))
-                    {
-                        minidumpDir = Environment.ExpandEnvironmentVariables(minidumpDir);
-                        if (Directory.Exists(minidumpDir))
-                            dirs.Add(minidumpDir);
-                    }
-                }
-            }
-            catch (Exception ex) when (ex is System.Security.SecurityException or UnauthorizedAccessException)
-            {
-                Debug.WriteLine($"[BsodDoctorService] Registry erişim hatası: {ex.Message}");
-            }
-
-            if (dirs.Count == 0)
-            {
-                var minidumpDir = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Minidump");
-                if (Directory.Exists(minidumpDir))
-                    dirs.Add(minidumpDir);
-            }
-        }
-        else
-        {
-            // Linux test ortamı
-            var testDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestDumps");
-            if (Directory.Exists(testDir))
-                dirs.Add(testDir);
-        }
-
-        return dirs;
-    }
-
-    #endregion
 }
 
 // PendingNotification modeli artık shared Models/PendingNotification.cs'de tanımlı

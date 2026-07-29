@@ -14,12 +14,13 @@
     <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.53.3" />
   </ItemGroup>
 
-  <!-- Shared code: Models, MinidumpReader, DB servisleri (test projesiyle aynı pattern) -->
+  <!-- Shared code: Models, MinidumpReader, DB servisleri, helpers (test projesiyle aynı pattern) -->
   <ItemGroup>
     <Compile Include="..\BsodDoctor\Models\*.cs" />
     <Compile Include="..\BsodDoctor\Services\MinidumpReader.cs" />
     <Compile Include="..\BsodDoctor\Services\IDatabaseService.cs" />
     <Compile Include="..\BsodDoctor\Services\DatabaseService.cs" />
+    <Compile Include="..\BsodDoctor\Services\DumpDirectoryHelper.cs" />
   </ItemGroup>
 
 </Project>
