@@ -83,4 +83,4 @@ Two tables: `bsod_errors` (code → solution mapping with `kesin_cozum` column f
 
 ### CI/CD
 
-GitHub Actions on push to `master`: build → run tests → publish self-contained → InnoSetup installer → GitHub Release (pre-release beta, versioned `0.1-beta.${{ github.run_number }}`).
+GitHub Actions on push to `master`: build → run tests → publish self-contained → InnoSetup installer → GitHub Release (stable, versioned `1.0.${{ github.run_number }}`).
