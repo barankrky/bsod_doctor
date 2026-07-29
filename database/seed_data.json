@@ -548,7 +548,7 @@
     "SolutionSteps": "1. GÃ¼venli Mod'da baÅŸlatÄ±n\n2. Son yÃ¼klenen sÃ¼rÃ¼cÃ¼ veya yazÄ±lÄ±mÄ± kaldÄ±rÄ±n\n3. 'sfc /scannow' Ã§alÄ±ÅŸtÄ±rÄ±n\n4. SÃ¼rÃ¼cÃ¼lerinizi gÃ¼ncelleyin\n5. Windows Bellek TanÄ±lama AracÄ±'nÄ± Ã§alÄ±ÅŸtÄ±rÄ±n",
     "RelatedKbUrls": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x4a--irql-gt-zero-at-system-service",
     "KesinCozum": "En kesin Ã§Ã¶zÃ¼m: GÃ¼venli Mod'da son yÃ¼klenen sÃ¼rÃ¼cÃ¼yÃ¼ kaldÄ±r. sfc /scannow Ã§alÄ±ÅŸtÄ±r. Windows Bellek TanÄ±lama AracÄ±'nÄ± Ã§alÄ±ÅŸtÄ±r."
-  }
+  },
 
 {
     "ErrorCode": "0x000000A5",
