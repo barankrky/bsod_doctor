@@ -11,12 +11,16 @@ Windows BSOD (mavi ekran) hatalarını analiz eden, tanımlayan ve Türkçe çö
 ## ✨ Özellikler
 
 - **Otomatik tanı** — Uygulama başlarken minidump dizinini tarar, yeni hataları yakalar
-- **50 BSOD kodu** — En yaygın mavi ekran hataları için Türkçe açıklama, çözüm adımları ve kesin çözüm özeti
-- **Tüm dump formatları** — PAGEDUMP64, PAGEDUMP32 ve klasik MDMP (ClrMd gerekmez)
+- **75 BSOD kodu** — En yaygın mavi ekran hataları için Türkçe açıklama, nedenler, çözüm adımları ve kesin çözüm özeti
+- **Tüm dump formatları** — PAGEDUMP64, PAGEDUMP32 ve klasik MDMP (ClrMd gerekmez, ham binary okuma)
+- **Windows Service** — Arkada çalışan servis ile yeni dump'ları 30dk'da bir otomatik tarar
+- **Toast bildirimleri** — Yeni BSOD tespit edildiğinde Windows bildirimi gönderir, tıklayınca detayı açar
+- **Ham minidump parser** — ClrMD bağımlılığı yok, doğrudan binary format okuyucu
 - **Dark / Light tema** — Kullanıcı tercihi kalıcı olarak kaydedilir
-- **Geçmiş listesi** — Çözülmemiş kayıtlar, tek tıkla detay görüntüleme
-- **24s cooldown** — Aynı hata tekrar bildirilmez
-- **SQLite** — Kurulum gerektirmez, her şey yerelde
+- **Geçmiş listesi** — Çözülmemiş kayıtlar, çift tıkla detay görüntüleme
+- **Cooldown sistemi** — Aynı hata için 24s tekrar tarama önleme (servis için 7 gün bildirim cooldown)
+- **SQLite (WAL modu)** — Kurulum gerektirmez, bağlantı havuzu ile yüksek performans
+- **Seed data** — Veritabanı ilk çalıştırmada otomatik doldurulur
 
 ---
 
@@ -38,15 +42,23 @@ Kurulum sürümü için GitHub Releases sayfasından `.exe` indirip çalıştır
 
 ```
 bsod_doctor/
-├── src/BsodDoctor/            # WPF uygulaması (MVVM)
-│   ├── ViewModels/            # MainViewModel (CommunityToolkit.Mvvm)
-│   ├── Models/                # BsodError, AnalysisResult, HistoryItem
-│   ├── Services/              # MinidumpReader, BsodWatchService, DatabaseService
-│   └── Resources/Themes/      # Dark / Light tema XAML'leri
-├── tests/                     # Synthetic dump ile doğrulama
-├── database/                  # seed_data.json (50 BSOD kodu + çözümler)
-├── setup/                     # InnoSetup kurulum betiği
-└── .github/workflows/         # CI/CD: build → test → publish → release
+├── src/
+│   ├── BsodDoctor/                  # WPF uygulaması (MVVM)
+│   │   ├── ViewModels/              # MainViewModel (CommunityToolkit.Mvvm)
+│   │   ├── Models/                  # BsodError, AnalysisResult, HistoryItem
+│   │   ├── Services/                # MinidumpReader, BsodWatchService, DatabaseService
+│   │   └── Resources/Themes/        # Dark / Light tema XAML'leri
+│   └── BsodDoctor.Service/          # Windows Background Service
+│       ├── DumpScannerService.cs    # 30dk'da bir tarama yapan servis
+│       └── Program.cs               # Generic Host ile DI yapılandırması
+├── tests/
+│   └── BsodDoctor.Tests/            # xUnit testleri (24 test)
+├── database/
+│   └── seed_data.json               # 75 BSOD kodu + Türkçe çözümler
+├── setup/
+│   └── bsod-doctor.iss              # InnoSetup kurulum betiği
+└── .github/workflows/
+    └── release.yml                  # CI/CD: build → test → publish → release
 ```
 
 ---
