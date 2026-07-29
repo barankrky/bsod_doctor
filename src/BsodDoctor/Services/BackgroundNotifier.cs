@@ -30,7 +30,40 @@ public class BackgroundNotifier
         Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
         "BsodDoctor");
 
-    private static bool _activationRegistered;
+    /// <summary>
+    /// Toast notification tıklandığında çalışacak event handler'ı bir kere kaydeder.
+    /// App.xaml.cs'nin başlangıcında çağrılmalıdır.
+    /// </summary>
+    public static void RegisterGlobalActivation()
+    {
+#if REAL_WINDOWS
+        ToastNotificationManagerCompat.OnActivated += args =>
+        {
+            var exePath = Process.GetCurrentProcess().MainModule?.FileName ?? "BsodDoctor.exe";
+            var launchArgs = string.Empty;
+
+            if (!string.IsNullOrEmpty(args.Argument))
+            {
+                var parts = args.Argument.Split('&')
+                    .Select(p => p.Split('=', 2))
+                    .Where(kv => kv.Length == 2)
+                    .ToDictionary(kv => kv[0], kv => kv[1]);
+
+                if (parts.TryGetValue("errorCode", out var errorCode) && !string.IsNullOrEmpty(errorCode))
+                {
+                    launchArgs = $"--open-error={errorCode}";
+                }
+            }
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = exePath,
+                Arguments = launchArgs,
+                UseShellExecute = true
+            });
+        };
+#endif
+    }
 
     /// <summary>
     /// Bekleyen bildirimleri kontrol eder ve toast notification gösterir.
@@ -53,11 +86,6 @@ public class BackgroundNotifier
             }
 
             Debug.WriteLine($"[BackgroundNotifier] {pendingFiles.Length} bekleyen bildirim bulundu.");
-
-#if REAL_WINDOWS
-            // ToastNotificationManagerCompat.OnActivated event'ini bir kere başlat
-            RegisterActivation();
-#endif
 
             foreach (var file in pendingFiles)
             {
@@ -89,39 +117,6 @@ public class BackgroundNotifier
     }
 
 #if REAL_WINDOWS
-    private static void RegisterActivation()
-    {
-        if (_activationRegistered) return;
-        _activationRegistered = true;
-
-        // Toast notification tıklandığında uygulamayı başlat
-        ToastNotificationManagerCompat.OnActivated += args =>
-        {
-            var exePath = Process.GetCurrentProcess().MainModule?.FileName ?? "BsodDoctor.exe";
-            var launchArgs = string.Empty;
-
-            if (!string.IsNullOrEmpty(args.Argument))
-            {
-                var parts = args.Argument.Split('&')
-                    .Select(p => p.Split('=', 2))
-                    .Where(kv => kv.Length == 2)
-                    .ToDictionary(kv => kv[0], kv => kv[1]);
-
-                if (parts.TryGetValue("errorCode", out var errorCode) && !string.IsNullOrEmpty(errorCode))
-                {
-                    launchArgs = $"--open-error={errorCode}";
-                }
-            }
-
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = exePath,
-                Arguments = launchArgs,
-                UseShellExecute = true
-            });
-        };
-    }
-
     /// <summary>
     /// Windows Toast Notification gösterir (ToastNotificationManagerCompat ile).
     /// Sadece Windows build'lerinde derlenir.
