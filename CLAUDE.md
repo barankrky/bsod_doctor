@@ -8,6 +8,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Build the app
 dotnet build src/BsodDoctor
 
+# Build with specific version (assembly metadata)
+dotnet build src/BsodDoctor -p:Version=1.0.0
+
 # Run (requires Windows for WPF runtime)
 dotnet run --project src/BsodDoctor
 
@@ -49,7 +52,7 @@ bsod_doctor/
 ├── database/
 │   ├── schema.sql            # SQLite schema (bsod_errors + analysis_history)
 │   └── seed_data.json        # 51 BSOD error codes with Turkish solutions
-├── setup/                    # InnoSetup installer script
+├── setup/                    # InnoSetup installer script + wizard images
 └── .github/workflows/        # CI: build → test → publish → release
 ```
 
@@ -83,4 +86,4 @@ Two tables: `bsod_errors` (code → solution mapping with `kesin_cozum` column f
 
 ### CI/CD
 
-GitHub Actions on push to `master`: build → run tests → publish self-contained → InnoSetup installer → GitHub Release (pre-release beta, versioned `0.1-beta.${{ github.run_number }}`).
+GitHub Actions on push to `master`: build → run tests → publish self-contained → InnoSetup installer → GitHub Release (stable, versioned `1.0.${{ github.run_number }}`). Assembly version injected via `-p:Version`. Installer includes app logo on wizard pages.
