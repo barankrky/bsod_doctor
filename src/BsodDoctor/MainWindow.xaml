@@ -7,7 +7,7 @@
         xmlns:local="clr-namespace:BsodDoctor"
         mc:Ignorable="d"
         Title="BSOD Doctor" Height="750" Width="1000"
-        Icon="Assets/logo.png"
+        Icon="Assets/app.ico"
         Background="{DynamicResource ThemeBackground}">
 
     <Window.Resources>
