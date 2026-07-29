@@ -16,7 +16,7 @@ Windows BSOD (mavi ekran) hatalarını analiz eden, tanımlayan ve Türkçe çö
 - **Windows Service** — Arkada çalışan servis ile yeni dump'ları 30dk'da bir otomatik tarar
 - **Toast bildirimleri** — Yeni BSOD tespit edildiğinde Windows bildirimi gönderir, tıklayınca detayı açar
 - **Ham minidump parser** — ClrMD bağımlılığı yok, doğrudan binary format okuyucu
-- **Dark / Light tema** — Kullanıcı tercihi kalıcı olarak kaydedilir
+- **Koyu/Açık tema desteği** — 🌙 butonu ile tek tıkla geçiş, tercih kalıcı olarak kaydedilir
 - **Geçmiş listesi** — Çözülmemiş kayıtlar, çift tıkla detay görüntüleme
 - **Cooldown sistemi** — Aynı hata için 24s tekrar tarama önleme (servis için 7 gün bildirim cooldown)
 - **SQLite (WAL modu)** — Kurulum gerektirmez, bağlantı havuzu ile yüksek performans
