@@ -8,8 +8,7 @@ permissions:
   contents: write
 
 env:
-  APP_VERSION: "0.1-beta.20"
-  APP_BUILD: "20"
+  APP_VERSION: "0.1-beta.${{ github.run_number }}"
 
 jobs:
   build:
@@ -43,7 +42,7 @@ jobs:
       run: choco install innosetup --no-progress --confirm
 
     - name: Build Installer
-      run: iscc /dMyAppVersion="$env:APP_VERSION" /dMyAppBuildNumber="${{ env.APP_BUILD }}" setup\bsod-doctor.iss
+      run: iscc /dMyAppVersion="$env:APP_VERSION" /dMyAppBuildNumber="${{ github.run_number }}" setup\bsod-doctor.iss
 
     - name: Generate Changelog
       shell: pwsh
