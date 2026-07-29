@@ -147,6 +147,7 @@ public class BsodNotificationActivator : NotificationActivator
 
             if (!string.IsNullOrEmpty(arguments))
             {
+                // Query string'den errorCode parametresini çıkar
                 var parts = arguments.Split('&')
                     .Select(p => p.Split('=', 2))
                     .Where(kv => kv.Length == 2)
