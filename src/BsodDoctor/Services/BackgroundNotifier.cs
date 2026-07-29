@@ -133,22 +133,21 @@ public class BackgroundNotifier
 [ClassInterface(ClassInterfaceType.None)]
 [ComVisible(true)]
 [Guid("B5E7F3A1-2C4D-4A8F-9E6B-1D3C5F7A9B0E")]
-public class NotificationActivator : DesktopNotificationManagerCompat.INotificationActivationCallback
+public class BsodNotificationActivator : NotificationActivator
 {
-    public void OnActivated(string invokedArgs, NotificationUserInput userInput, string appUserModelId)
+    public override void OnActivated(string arguments, NotificationUserInput userInput, string appUserModelId)
     {
         var exePath = Process.GetCurrentProcess().MainModule?.FileName ?? "BsodDoctor.exe";
 
         try
         {
-            // invokedArgs formatı: "action=openError&errorCode=0x0000001A"
+            // arguments formatı: "action=openError&errorCode=0x0000001A"
             // App.xaml.cs --open-error=KOD formatını bekliyor, o yüzden parse et
             var launchArgs = string.Empty;
 
-            if (!string.IsNullOrEmpty(invokedArgs))
+            if (!string.IsNullOrEmpty(arguments))
             {
-                // Query string'den errorCode parametresini çıkar
-                var parts = invokedArgs.Split('&')
+                var parts = arguments.Split('&')
                     .Select(p => p.Split('=', 2))
                     .Where(kv => kv.Length == 2)
                     .ToDictionary(kv => kv[0], kv => kv[1]);
